@@ -1,0 +1,25 @@
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local IDE and virtual-environment files
+.idea/
+.vscode/
+.venv/
+venv/
+
+# OS-generated files
+.DS_Store
+
+# Regenerable experiment artifacts
+outputs/checkpoints/
+outputs/logs/
+outputs/videos/
+outputs/dev_*
+
+# Temporary files
+*.tmp
+*.log
