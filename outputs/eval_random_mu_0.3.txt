@@ -1,0 +1,60 @@
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+Local assets not found. Downloading from HuggingFace Hub...
+Assets already downloaded at /home/deng-xuan/.cache/libero/assets
+episode=01 seed=1000 success=True return=+21.031 steps=69 final_goal=0.0619 friction=0.3
+episode=02 seed=1001 success=True return=+20.178 steps=66 final_goal=0.0543 friction=0.3
+episode=03 seed=1002 success=True return=+20.170 steps=66 final_goal=0.0574 friction=0.3
+episode=04 seed=1003 success=True return=+20.437 steps=67 final_goal=0.0588 friction=0.3
+episode=05 seed=1004 success=True return=+20.716 steps=68 final_goal=0.0575 friction=0.3
+episode=06 seed=1005 success=True return=+21.043 steps=69 final_goal=0.0620 friction=0.3
+episode=07 seed=1006 success=True return=+21.021 steps=69 final_goal=0.0616 friction=0.3
+episode=08 seed=1007 success=True return=+20.173 steps=66 final_goal=0.0584 friction=0.3
+episode=09 seed=1008 success=True return=+20.426 steps=67 final_goal=0.0597 friction=0.3
+episode=10 seed=1009 success=True return=+20.954 steps=69 final_goal=0.0569 friction=0.3
+episode=11 seed=1010 success=True return=+20.697 steps=68 final_goal=0.0573 friction=0.3
+episode=12 seed=1011 success=True return=+20.755 steps=68 final_goal=0.0600 friction=0.3
+episode=13 seed=1012 success=True return=+20.437 steps=67 final_goal=0.0603 friction=0.3
+episode=14 seed=1013 success=True return=+20.680 steps=68 final_goal=0.0597 friction=0.3
+episode=15 seed=1014 success=True return=+20.747 steps=68 final_goal=0.0593 friction=0.3
+episode=16 seed=1015 success=True return=+20.700 steps=68 final_goal=0.0559 friction=0.3
+episode=17 seed=1016 success=True return=+20.987 steps=69 final_goal=0.0594 friction=0.3
+episode=18 seed=1017 success=True return=+20.165 steps=66 final_goal=0.0581 friction=0.3
+episode=19 seed=1018 success=True return=+20.974 steps=69 final_goal=0.0541 friction=0.3
+episode=20 seed=1019 success=True return=+21.009 steps=69 final_goal=0.0588 friction=0.3
+episode=21 seed=1020 success=True return=+20.872 steps=69 final_goal=0.0589 friction=0.3
+episode=22 seed=1021 success=True return=+21.159 steps=70 final_goal=0.0561 friction=0.3
+episode=23 seed=1022 success=True return=+20.175 steps=66 final_goal=0.0566 friction=0.3
+episode=24 seed=1023 success=True return=+21.053 steps=69 final_goal=0.0612 friction=0.3
+episode=25 seed=1024 success=True return=+20.440 steps=67 final_goal=0.0585 friction=0.3
+episode=26 seed=1025 success=True return=+20.996 steps=69 final_goal=0.0593 friction=0.3
+episode=27 seed=1026 success=True return=+20.869 steps=69 final_goal=0.0595 friction=0.3
+episode=28 seed=1027 success=True return=+20.986 steps=69 final_goal=0.0580 friction=0.3
+episode=29 seed=1028 success=True return=+20.172 steps=66 final_goal=0.0590 friction=0.3
+episode=30 seed=1029 success=True return=+20.153 steps=66 final_goal=0.0577 friction=0.3
+episode=31 seed=1030 success=True return=+20.952 steps=69 final_goal=0.0560 friction=0.3
+episode=32 seed=1031 success=True return=+20.958 steps=69 final_goal=0.0588 friction=0.3
+episode=33 seed=1032 success=True return=+20.160 steps=66 final_goal=0.0581 friction=0.3
+episode=34 seed=1033 success=True return=+20.436 steps=67 final_goal=0.0576 friction=0.3
+episode=35 seed=1034 success=True return=+20.342 steps=67 final_goal=0.0595 friction=0.3
+episode=36 seed=1035 success=True return=+21.362 steps=70 final_goal=0.0573 friction=0.3
+episode=37 seed=1036 success=True return=+20.772 steps=68 final_goal=0.0602 friction=0.3
+episode=38 seed=1037 success=True return=+20.437 steps=67 final_goal=0.0577 friction=0.3
+episode=39 seed=1038 success=True return=+21.322 steps=70 final_goal=0.0586 friction=0.3
+episode=40 seed=1039 success=True return=+20.961 steps=69 final_goal=0.0566 friction=0.3
+episode=41 seed=1040 success=True return=+21.076 steps=70 final_goal=0.0583 friction=0.3
+episode=42 seed=1041 success=True return=+20.436 steps=67 final_goal=0.0594 friction=0.3
+episode=43 seed=1042 success=True return=+21.305 steps=70 final_goal=0.0599 friction=0.3
+episode=44 seed=1043 success=True return=+19.988 steps=66 final_goal=0.0608 friction=0.3
+episode=45 seed=1044 success=True return=+20.170 steps=66 final_goal=0.0593 friction=0.3
+episode=46 seed=1045 success=True return=+21.241 steps=70 final_goal=0.0591 friction=0.3
+episode=47 seed=1046 success=True return=+20.711 steps=68 final_goal=0.0545 friction=0.3
+episode=48 seed=1047 success=True return=+20.707 steps=68 final_goal=0.0586 friction=0.3
+episode=49 seed=1048 success=True return=+20.171 steps=66 final_goal=0.0562 friction=0.3
+episode=50 seed=1049 success=True return=+20.709 steps=68 final_goal=0.0597 friction=0.3
+
+Evaluation summary
+success_rate=1.000 (50/50)
+mean_return=20.688
+mean_episode_length=67.9
+mean_final_goal_distance=0.0584
