@@ -1,0 +1,21 @@
+(define (problem LIBERO_Tabletop_Manipulation)
+  (:domain robosuite)
+  (:language Push the plate into the blue target region)
+  (:regions
+    (plate_start_region
+      (:target main_table)
+      (:ranges ((0.04 -0.01 0.08 0.01)))
+      (:yaw_rotation ((-0.15 0.15)))
+    )
+    (push_target_region
+      (:target main_table)
+      (:ranges ((-0.10 0.16 0.02 0.28)))
+      (:rgba (0.1 0.3 1.0 0.35))
+    )
+  )
+  (:fixtures main_table - table)
+  (:objects plate_1 - plate)
+  (:obj_of_interest plate_1 main_table_push_target_region)
+  (:init (On plate_1 main_table_plate_start_region))
+  (:goal (And (On plate_1 main_table_push_target_region)))
+)
