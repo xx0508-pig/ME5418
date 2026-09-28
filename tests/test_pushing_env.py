@@ -125,6 +125,9 @@ def test_runtime_contact_friction_matches_requested(friction):
         actual = get_plate_table_contact_frictions(env)
 
         assert actual.size > 0
+
+        assert info["requested_friction"] == pytest.approx(friction)
+        assert info["contact_friction"] == pytest.approx(friction)
         assert info["friction"] == pytest.approx(friction)
         np.testing.assert_allclose(
             actual,
