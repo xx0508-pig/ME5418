@@ -28,9 +28,26 @@ class LiberoPushingEnvV1(gym.Env):
             success_radius=0.06,
             object_speed_threshold=0.02,
             stable_steps_required=5,
+            workspace_margin=0.02,
+            workspace_z_tolerance=0.05,
             render_mode="rgb_array",
     ):
         super().__init__()
+
+        if workspace_margin < 0:
+            raise ValueError(
+                "workspace_margin cannot be negative."
+            )
+
+        if workspace_z_tolerance < 0:
+            raise ValueError(
+                "workspace_z_tolerance cannot be negative."
+            )
+
+        self.workspace_margin = float(workspace_margin)
+        self.workspace_z_tolerance = float(
+            workspace_z_tolerance
+        )
 
         if success_radius <= 0:
             raise ValueError("success_radius must be positive.")
@@ -137,6 +154,79 @@ class LiberoPushingEnvV1(gym.Env):
         return bool(
             self.stable_count >= self.stable_steps_required
         )
+
+    @staticmethod
+    def _values_are_finite(*values):
+        return all(
+            np.isfinite(np.asarray(value)).all()
+            for value in values
+        )
+
+    def _is_plate_in_workspace(self, plate_position):
+        env = self._get_libero_task_env()
+        sim = env.sim
+
+        table_geom_id = sim.model.geom_name2id(
+            "table_collision"
+        )
+
+        table_center = np.asarray(
+            sim.data.geom_xpos[table_geom_id],
+            dtype=np.float64,
+        )
+        table_half_size = np.asarray(
+            sim.model.geom_size[table_geom_id],
+            dtype=np.float64,
+        )
+
+        allowed_half_size = (
+                table_half_size[:2] - self.workspace_margin
+        )
+
+        if np.any(allowed_half_size <= 0):
+            raise ValueError(
+                "workspace_margin is too large for the table."
+            )
+
+        xy_offset = np.abs(
+            np.asarray(plate_position[:2])
+            - table_center[:2]
+        )
+        xy_inside = bool(
+            np.all(xy_offset <= allowed_half_size)
+        )
+
+        table_top = (
+                table_center[2] + table_half_size[2]
+        )
+        z_above_limit = bool(
+            plate_position[2]
+            >= table_top - self.workspace_z_tolerance
+        )
+
+        return bool(xy_inside and z_above_limit)
+
+    @staticmethod
+    def _select_termination_reason(
+            *,
+            invalid_state,
+            out_of_workspace,
+            stable_success,
+            time_limit,
+    ):
+        if invalid_state:
+            return "invalid_state"
+
+        if out_of_workspace:
+            return "out_of_workspace"
+
+        if stable_success:
+            return "stable_success"
+
+        if time_limit:
+            return "time_limit"
+
+        return None
 
     def _get_contact_force(self):
         """Net world-frame plate contact force, for optional future ablations."""
@@ -282,9 +372,30 @@ class LiberoPushingEnvV1(gym.Env):
             self._compute_distances(obs)
         )
 
+        observation = self._build_observation(obs)
+        plate_position = self._get_plate_position()
+        object_velocity = self._get_plate_velocity()
         object_speed = float(
-            np.linalg.norm(self._get_plate_velocity())
+            np.linalg.norm(object_velocity)
         )
+
+        initial_state_valid = self._values_are_finite(
+            observation,
+            plate_position,
+            object_velocity,
+            self.prev_reach_distance,
+            self.prev_goal_distance,
+        )
+
+        if not initial_state_valid:
+            raise RuntimeError(
+                "Invalid numerical state immediately after reset."
+            )
+
+        if not self._is_plate_in_workspace(plate_position):
+            raise RuntimeError(
+                "Plate starts outside the valid workspace."
+            )
         distance_success = bool(
             self.prev_goal_distance <= self.success_radius
         )
@@ -304,20 +415,35 @@ class LiberoPushingEnvV1(gym.Env):
             "contact_friction": (
                 self.current_contact_friction
             ),
+            "termination_reason": None,
+            "invalid_state": False,
+            "out_of_workspace": False,
+            "time_limit": False,
         }
 
-        return self._build_observation(obs), info
+        return observation, info
 
     def step(self, action):
         self.step_count += 1
 
+        action_array = np.asarray(
+            action,
+            dtype=np.float32,
+        )
+
         obs, sparse_reward, base_done, _, base_info = (
             self.base_env.step(
-                self._convert_action(action)
+                self._convert_action(action_array)
             )
         )
 
         reach, goal = self._compute_distances(obs)
+        plate_position = self._get_plate_position()
+        object_velocity = self._get_plate_velocity()
+        object_speed = float(
+            np.linalg.norm(object_velocity)
+        )
+        observation = self._build_observation(obs)
 
         reach_progress = (
                 self.prev_reach_distance - reach
@@ -325,12 +451,11 @@ class LiberoPushingEnvV1(gym.Env):
         goal_progress = (
                 self.prev_goal_distance - goal
         )
-
         action_penalty = 0.001 * float(
-            np.square(action).sum()
+            np.square(action_array).sum()
         )
 
-        reward = (
+        raw_reward = (
                 5 * reach_progress
                 + 50 * goal_progress
                 - action_penalty
@@ -341,47 +466,118 @@ class LiberoPushingEnvV1(gym.Env):
             base_info.get("is_success", False)
         )
         distance_success = bool(
-            goal <= self.success_radius
+            np.isfinite(goal)
+            and goal <= self.success_radius
         )
 
-        object_speed = float(
-            np.linalg.norm(self._get_plate_velocity())
+        invalid_state = not self._values_are_finite(
+            action_array,
+            observation,
+            plate_position,
+            object_velocity,
+            reach,
+            goal,
+            raw_reward,
         )
 
-        stable_success = self._update_stable_success(
-            distance_success,
-            object_speed,
+        out_of_workspace = bool(
+            not invalid_state
+            and not self._is_plate_in_workspace(
+                plate_position
+            )
         )
 
-        # v1 只在 stable_success 时给予成功奖励。
+        if invalid_state or out_of_workspace:
+            self.stable_count = 0
+            stable_success = False
+        else:
+            stable_success = self._update_stable_success(
+                distance_success,
+                object_speed,
+            )
+
+        time_limit = bool(
+            self.step_count >= self.max_steps
+        )
+
+        termination_reason = (
+            self._select_termination_reason(
+                invalid_state=invalid_state,
+                out_of_workspace=out_of_workspace,
+                stable_success=stable_success,
+                time_limit=time_limit,
+            )
+        )
+
+        terminated = termination_reason in {
+            "invalid_state",
+            "out_of_workspace",
+            "stable_success",
+        }
+        truncated = termination_reason == "time_limit"
+
+        # 避免异常数值继续进入 PPO。
+        if invalid_state:
+            observation = np.nan_to_num(
+                observation,
+                nan=0.0,
+                posinf=0.0,
+                neginf=0.0,
+            )
+            reward = -10.0
+        else:
+            reward = raw_reward
+
         if stable_success:
             reward += 10.0
 
-        self.prev_reach_distance = reach
-        self.prev_goal_distance = goal
+        if np.isfinite(reach):
+            self.prev_reach_distance = reach
 
-        terminated = stable_success
-
-        # 如果刚好在第 300 步成功，优先算成功，而不是超时。
-        truncated = bool(
-            self.step_count >= self.max_steps
-            and not stable_success
-        )
+        if np.isfinite(goal):
+            self.prev_goal_distance = goal
 
         info = {
-            # v1 中 is_success 是 stable_success 的兼容别名。
             "is_success": stable_success,
             "libero_success": libero_success,
             "distance_success": distance_success,
             "stable_success": stable_success,
             "stable_count": self.stable_count,
-            "object_speed": object_speed,
-            "reach_distance": reach,
-            "goal_distance": goal,
-            "reach_progress": reach_progress,
-            "goal_progress": goal_progress,
-            "action_penalty": action_penalty,
-            "libero_sparse_reward": sparse_reward,
+            "object_speed": (
+                object_speed
+                if np.isfinite(object_speed)
+                else None
+            ),
+            "termination_reason": termination_reason,
+            "invalid_state": invalid_state,
+            "out_of_workspace": out_of_workspace,
+            "time_limit": time_limit,
+            "reach_distance": (
+                reach if np.isfinite(reach) else None
+            ),
+            "goal_distance": (
+                goal if np.isfinite(goal) else None
+            ),
+            "reach_progress": (
+                reach_progress
+                if np.isfinite(reach_progress)
+                else None
+            ),
+            "goal_progress": (
+                goal_progress
+                if np.isfinite(goal_progress)
+                else None
+            ),
+            "action_penalty": (
+                action_penalty
+                if np.isfinite(action_penalty)
+                else None
+            ),
+            "libero_sparse_reward": (
+                sparse_reward
+                if np.isfinite(sparse_reward)
+                else None
+            ),
             "base_env_done": bool(base_done),
             "friction": self.current_friction,
             "requested_friction": self.requested_friction,
@@ -391,7 +587,7 @@ class LiberoPushingEnvV1(gym.Env):
         }
 
         return (
-            self._build_observation(obs),
+            observation,
             float(reward),
             bool(terminated),
             bool(truncated),
