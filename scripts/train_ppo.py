@@ -252,8 +252,6 @@ def main():
     try:
         env = Monitor(
             LiberoPushingEnv(
-                seed=args.seed,
-                render_images=False,
                 friction_range=friction_range,
                 include_object_velocity=include_velocity,
                 include_contact_force=include_force,
