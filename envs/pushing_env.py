@@ -33,6 +33,8 @@ class LiberoPushingEnv(gym.Env):
         self.base_env = ProjectLiberoEnv(bddl_file, observation_size)
         self.prev_goal_distance = self.prev_reach_distance = None
         self.current_friction = None
+        self.requested_friction = None
+        self.current_contact_friction = None
 
     def _get_libero_task_env(self):
         if self.base_env._env is None:
@@ -71,6 +73,36 @@ class LiberoPushingEnv(gym.Env):
             net += force if body1 == plate_body else -force
         return net.astype(np.float32)
 
+    def _get_plate_table_contact_frictions(self):
+        env = self._get_libero_task_env()
+        sim = env.sim
+
+        plate_body_id = env.obj_body_id["plate_1"]
+        table_geom_id = sim.model.geom_name2id(
+            "table_collision"
+        )
+
+        values = []
+
+        for i in range(sim.data.ncon):
+            contact = sim.data.contact[i]
+
+            body1 = sim.model.geom_bodyid[contact.geom1]
+            body2 = sim.model.geom_bodyid[contact.geom2]
+
+            is_plate_table = (
+                                     body1 == plate_body_id
+                                     and contact.geom2 == table_geom_id
+                             ) or (
+                                     body2 == plate_body_id
+                                     and contact.geom1 == table_geom_id
+                             )
+
+            if is_plate_table:
+                values.append(float(contact.friction[0]))
+
+        return np.asarray(values, dtype=np.float64)
+
     def _set_surface_friction(self, friction):
         env = self._get_libero_task_env()
 
@@ -91,7 +123,30 @@ class LiberoPushingEnv(gym.Env):
 
         env.sim.forward()
 
-        self.current_friction = float(friction)
+        requested = float(friction)
+        actual_values = self._get_plate_table_contact_frictions()
+
+        if actual_values.size == 0:
+            raise RuntimeError(
+                "No plate-table contacts found after setting friction"
+            )
+
+        if not np.allclose(
+                actual_values,
+                requested,
+                atol=1e-6,
+        ):
+            raise RuntimeError(
+                "Contact friction mismatch: "
+                f"requested={requested}, "
+                f"actual={actual_values.tolist()}"
+            )
+
+        actual = float(actual_values.mean())
+
+        self.requested_friction = requested
+        self.current_contact_friction = actual
+        self.current_friction = actual
 
     def _build_observation(self, obs):
         eef, plate, goal = self._get_eef_position(obs), self._get_plate_position(), self._get_goal_position()
@@ -118,10 +173,21 @@ class LiberoPushingEnv(gym.Env):
         if self.friction_range is not None:
             self._set_surface_friction(self.np_random.uniform(*self.friction_range))
         else:
-            self.current_friction = None
+            self.requested_friction = None
+
+            actual_values = self._get_plate_table_contact_frictions()
+
+            self.current_contact_friction = (
+                float(actual_values.mean())
+                if actual_values.size
+                else None
+            )
+            self.current_friction = self.current_contact_friction
         self.prev_reach_distance, self.prev_goal_distance = self._compute_distances(obs)
         info = {"is_success": False, "reach_distance": self.prev_reach_distance,
-                "goal_distance": self.prev_goal_distance, "friction": self.current_friction}
+                "goal_distance": self.prev_goal_distance, "friction": self.current_friction,
+                "requested_friction": self.requested_friction,"contact_friction": self.current_contact_friction,
+                }
         return self._build_observation(obs), info
 
     def step(self, action):
@@ -137,7 +203,8 @@ class LiberoPushingEnv(gym.Env):
         info = {"is_success": success, "reach_distance": reach, "goal_distance": goal,
                 "reach_progress": reach_progress, "goal_progress": goal_progress,
                 "action_penalty": action_penalty, "libero_sparse_reward": sparse_reward,
-                "friction": self.current_friction}
+                "friction": self.current_friction,"requested_friction": self.requested_friction,
+                "contact_friction": self.current_contact_friction,}
         return self._build_observation(obs), float(reward), success or base_done, self.step_count >= self.max_steps, info
 
     def render(self):

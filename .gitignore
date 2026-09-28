@@ -23,4 +23,9 @@ outputs/dev_*
 # Temporary files
 *.tmp
 *.log
-outputs/models/*
+
+# Unpacked model directories; keep final .zip models
+outputs/models/*/
+
+# Per-run generated artifacts
+outputs/runs/
