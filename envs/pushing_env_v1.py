@@ -16,22 +16,82 @@ class LiberoPushingEnvV1(gym.Env):
     """Formal v1 benchmark for contact-aware tabletop pushing."""
     metadata = {"render_modes": ["rgb_array"], "render_fps": 20}
 
-    def __init__(self, max_steps=300, action_scale=0.5, observation_size=64,
-                 bddl_file=DEFAULT_BDDL_V1, include_object_velocity=False,
-                 include_contact_force=False, friction_range=None,
-                 success_radius=0.06, render_mode="rgb_array"):
+    def __init__(
+            self,
+            max_steps=300,
+            action_scale=0.5,
+            observation_size=64,
+            bddl_file=DEFAULT_BDDL_V1,
+            include_object_velocity=False,
+            include_contact_force=False,
+            friction_range=None,
+            success_radius=0.06,
+            object_speed_threshold=0.02,
+            stable_steps_required=5,
+            render_mode="rgb_array",
+    ):
         super().__init__()
-        self.max_steps, self.action_scale = int(max_steps), float(action_scale)
-        self.include_object_velocity = bool(include_object_velocity)
-        self.include_contact_force = bool(include_contact_force)
-        self.friction_range, self.success_radius = friction_range, float(success_radius)
+
+        if success_radius <= 0:
+            raise ValueError("success_radius must be positive.")
+
+        if object_speed_threshold < 0:
+            raise ValueError(
+                "object_speed_threshold cannot be negative."
+            )
+
+        if stable_steps_required < 1:
+            raise ValueError(
+                "stable_steps_required must be at least one."
+            )
+
+        self.max_steps = int(max_steps)
+        self.action_scale = float(action_scale)
+        self.include_object_velocity = bool(
+            include_object_velocity
+        )
+        self.include_contact_force = bool(
+            include_contact_force
+        )
+        self.friction_range = friction_range
+        self.success_radius = float(success_radius)
+        self.object_speed_threshold = float(
+            object_speed_threshold
+        )
+        self.stable_steps_required = int(
+            stable_steps_required
+        )
         self.render_mode = render_mode
+
         self.step_count = 0
-        obs_dim = 6 + 3 * self.include_object_velocity + 3 * self.include_contact_force
-        self.observation_space = spaces.Box(-np.inf, np.inf, (obs_dim,), dtype=np.float32)
-        self.action_space = spaces.Box(-1.0, 1.0, (3,), dtype=np.float32)
-        self.base_env = ProjectLiberoEnv(bddl_file, observation_size)
-        self.prev_goal_distance = self.prev_reach_distance = None
+        self.stable_count = 0
+
+        obs_dim = (
+                6
+                + 3 * self.include_object_velocity
+                + 3 * self.include_contact_force
+        )
+
+        self.observation_space = spaces.Box(
+            -np.inf,
+            np.inf,
+            (obs_dim,),
+            dtype=np.float32,
+        )
+        self.action_space = spaces.Box(
+            -1.0,
+            1.0,
+            (3,),
+            dtype=np.float32,
+        )
+
+        self.base_env = ProjectLiberoEnv(
+            bddl_file,
+            observation_size,
+        )
+
+        self.prev_goal_distance = None
+        self.prev_reach_distance = None
         self.current_friction = None
         self.requested_friction = None
         self.current_contact_friction = None
@@ -58,6 +118,25 @@ class LiberoPushingEnvV1(gym.Env):
         env = self._get_libero_task_env()
         body_name = env.objects_dict["plate_1"].root_body
         return np.asarray(env.sim.data.get_body_xvelp(body_name), dtype=np.float32).copy()
+
+    def _update_stable_success(
+            self,
+            distance_success,
+            object_speed,
+    ):
+        stable_now = bool(
+            distance_success
+            and object_speed <= self.object_speed_threshold
+        )
+
+        if stable_now:
+            self.stable_count += 1
+        else:
+            self.stable_count = 0
+
+        return bool(
+            self.stable_count >= self.stable_steps_required
+        )
 
     def _get_contact_force(self):
         """Net world-frame plate contact force, for optional future ablations."""
@@ -167,45 +246,157 @@ class LiberoPushingEnvV1(gym.Env):
 
     def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
-        seed = int(self.np_random.integers(0, 2**31 - 1)) if seed is None else seed
+
+        if seed is None:
+            seed = int(
+                self.np_random.integers(0, 2 ** 31 - 1)
+            )
+
         obs, _ = self.base_env.reset(seed)
+
         self.step_count = 0
+        self.stable_count = 0
+
         if self.friction_range is not None:
-            self._set_surface_friction(self.np_random.uniform(*self.friction_range))
+            friction = self.np_random.uniform(
+                *self.friction_range
+            )
+            self._set_surface_friction(friction)
         else:
             self.requested_friction = None
 
-            actual_values = self._get_plate_table_contact_frictions()
+            actual_values = (
+                self._get_plate_table_contact_frictions()
+            )
 
             self.current_contact_friction = (
                 float(actual_values.mean())
                 if actual_values.size
                 else None
             )
-            self.current_friction = self.current_contact_friction
-        self.prev_reach_distance, self.prev_goal_distance = self._compute_distances(obs)
-        info = {"is_success": False, "reach_distance": self.prev_reach_distance,
-                "goal_distance": self.prev_goal_distance, "friction": self.current_friction,
-                "requested_friction": self.requested_friction,"contact_friction": self.current_contact_friction,
-                }
+            self.current_friction = (
+                self.current_contact_friction
+            )
+
+        self.prev_reach_distance, self.prev_goal_distance = (
+            self._compute_distances(obs)
+        )
+
+        object_speed = float(
+            np.linalg.norm(self._get_plate_velocity())
+        )
+        distance_success = bool(
+            self.prev_goal_distance <= self.success_radius
+        )
+
+        info = {
+            # 兼容已有训练和评估脚本，但在 v1 中只表示稳定成功。
+            "is_success": False,
+            "libero_success": False,
+            "distance_success": distance_success,
+            "stable_success": False,
+            "stable_count": 0,
+            "object_speed": object_speed,
+            "reach_distance": self.prev_reach_distance,
+            "goal_distance": self.prev_goal_distance,
+            "friction": self.current_friction,
+            "requested_friction": self.requested_friction,
+            "contact_friction": (
+                self.current_contact_friction
+            ),
+        }
+
         return self._build_observation(obs), info
 
     def step(self, action):
         self.step_count += 1
-        obs, sparse_reward, base_done, _, base_info = self.base_env.step(self._convert_action(action))
+
+        obs, sparse_reward, base_done, _, base_info = (
+            self.base_env.step(
+                self._convert_action(action)
+            )
+        )
+
         reach, goal = self._compute_distances(obs)
-        reach_progress, goal_progress = self.prev_reach_distance - reach, self.prev_goal_distance - goal
-        action_penalty = 0.001 * float(np.square(action).sum())
-        reward = 5 * reach_progress + 50 * goal_progress - action_penalty - 0.0005
-        success = bool(base_info.get("is_success", False) or goal <= self.success_radius)
-        reward += 10.0 if success else 0.0
-        self.prev_reach_distance, self.prev_goal_distance = reach, goal
-        info = {"is_success": success, "reach_distance": reach, "goal_distance": goal,
-                "reach_progress": reach_progress, "goal_progress": goal_progress,
-                "action_penalty": action_penalty, "libero_sparse_reward": sparse_reward,
-                "friction": self.current_friction,"requested_friction": self.requested_friction,
-                "contact_friction": self.current_contact_friction,}
-        return self._build_observation(obs), float(reward), success or base_done, self.step_count >= self.max_steps, info
+
+        reach_progress = (
+                self.prev_reach_distance - reach
+        )
+        goal_progress = (
+                self.prev_goal_distance - goal
+        )
+
+        action_penalty = 0.001 * float(
+            np.square(action).sum()
+        )
+
+        reward = (
+                5 * reach_progress
+                + 50 * goal_progress
+                - action_penalty
+                - 0.0005
+        )
+
+        libero_success = bool(
+            base_info.get("is_success", False)
+        )
+        distance_success = bool(
+            goal <= self.success_radius
+        )
+
+        object_speed = float(
+            np.linalg.norm(self._get_plate_velocity())
+        )
+
+        stable_success = self._update_stable_success(
+            distance_success,
+            object_speed,
+        )
+
+        # v1 只在 stable_success 时给予成功奖励。
+        if stable_success:
+            reward += 10.0
+
+        self.prev_reach_distance = reach
+        self.prev_goal_distance = goal
+
+        terminated = stable_success
+
+        # 如果刚好在第 300 步成功，优先算成功，而不是超时。
+        truncated = bool(
+            self.step_count >= self.max_steps
+            and not stable_success
+        )
+
+        info = {
+            # v1 中 is_success 是 stable_success 的兼容别名。
+            "is_success": stable_success,
+            "libero_success": libero_success,
+            "distance_success": distance_success,
+            "stable_success": stable_success,
+            "stable_count": self.stable_count,
+            "object_speed": object_speed,
+            "reach_distance": reach,
+            "goal_distance": goal,
+            "reach_progress": reach_progress,
+            "goal_progress": goal_progress,
+            "action_penalty": action_penalty,
+            "libero_sparse_reward": sparse_reward,
+            "base_env_done": bool(base_done),
+            "friction": self.current_friction,
+            "requested_friction": self.requested_friction,
+            "contact_friction": (
+                self.current_contact_friction
+            ),
+        }
+
+        return (
+            self._build_observation(obs),
+            float(reward),
+            bool(terminated),
+            bool(truncated),
+            info,
+        )
 
     def render(self):
         return self.base_env.render()
