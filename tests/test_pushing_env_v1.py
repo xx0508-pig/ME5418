@@ -3,15 +3,38 @@ import numpy as np
 import pytest
 from gymnasium.envs.registration import registry
 
-import envs
-from envs import V0_ENV_ID, V1_ENV_ID
+from envs import (
+    V0_ENV_ID,
+    V1_ENV_ID,
+    make_pushing_env,
+)
+from envs.pushing_env import LiberoPushingEnv
 from envs.pushing_env_v1 import LiberoPushingEnvV1
-
 
 def test_v0_and_v1_are_registered():
     assert V0_ENV_ID in registry
     assert V1_ENV_ID in registry
     assert V0_ENV_ID != V1_ENV_ID
+
+
+def test_environment_factory_selects_version():
+    v0_env = make_pushing_env("v0")
+    v1_env = make_pushing_env("v1")
+
+    try:
+        assert isinstance(v0_env, LiberoPushingEnv)
+        assert isinstance(v1_env, LiberoPushingEnvV1)
+    finally:
+        v0_env.close()
+        v1_env.close()
+
+
+def test_environment_factory_rejects_unknown_version():
+    with pytest.raises(
+        ValueError,
+        match="Unknown environment version",
+    ):
+        make_pushing_env("v2")
 
 
 @pytest.mark.integration
@@ -214,3 +237,55 @@ def test_workspace_detection():
 
     finally:
         env.close()
+
+
+@pytest.mark.integration
+def test_v1_initial_randomization_varies_across_seeds():
+    env = LiberoPushingEnvV1(
+        observation_size=32,
+        friction_range=(0.3, 0.9),
+    )
+    starts = []
+
+    try:
+        for seed in range(2000, 2006):
+            _, info = env.reset(seed=seed)
+            starts.append(
+                (
+                    info["initial_plate_x"],
+                    info["initial_plate_y"],
+                    info["initial_plate_yaw"],
+                    info["initial_plate_yaw_offset"],
+                    info["requested_friction"],
+                )
+            )
+    finally:
+        env.close()
+
+    for column in zip(*starts):
+        assert len({round(value, 6) for value in column}) > 1
+
+
+@pytest.mark.integration
+def test_v1_initial_randomization_repeats_with_same_seed():
+    env = LiberoPushingEnvV1(
+        observation_size=32,
+        friction_range=(0.3, 0.9),
+    )
+
+    try:
+        _, first = env.reset(seed=2000)
+        _, second = env.reset(seed=2000)
+    finally:
+        env.close()
+
+    for key in (
+        "initial_plate_x",
+        "initial_plate_y",
+        "initial_plate_z",
+        "initial_plate_yaw",
+        "initial_plate_yaw_offset",
+        "requested_friction",
+        "contact_friction",
+    ):
+        assert first[key] == pytest.approx(second[key], abs=1e-6)

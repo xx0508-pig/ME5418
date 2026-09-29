@@ -4,8 +4,8 @@
   (:regions
     (plate_start_region
       (:target main_table)
-      (:ranges ((0.04 -0.01 0.08 0.01)))
-      (:yaw_rotation ((-0.15 0.15)))
+      (:ranges ((-0.02 -0.08 0.12 0.08)))
+      (:yaw_rotation ((-0.50 0.50)))
     )
     (push_target_region
       (:target main_table)

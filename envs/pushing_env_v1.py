@@ -28,6 +28,7 @@ class LiberoPushingEnvV1(gym.Env):
             success_radius=0.06,
             object_speed_threshold=0.02,
             stable_steps_required=5,
+            initial_yaw_range=(-0.50, 0.50),
             workspace_margin=0.02,
             workspace_z_tolerance=0.05,
             render_mode="rgb_array",
@@ -62,6 +63,20 @@ class LiberoPushingEnvV1(gym.Env):
                 "stable_steps_required must be at least one."
             )
 
+        if len(initial_yaw_range) != 2:
+            raise ValueError(
+                "initial_yaw_range must contain two values."
+            )
+        yaw_min, yaw_max = map(float, initial_yaw_range)
+        if not np.isfinite([yaw_min, yaw_max]).all():
+            raise ValueError(
+                "initial_yaw_range values must be finite."
+            )
+        if yaw_min > yaw_max:
+            raise ValueError(
+                "initial_yaw_range minimum cannot exceed maximum."
+            )
+
         self.max_steps = int(max_steps)
         self.action_scale = float(action_scale)
         self.include_object_velocity = bool(
@@ -78,6 +93,9 @@ class LiberoPushingEnvV1(gym.Env):
         self.stable_steps_required = int(
             stable_steps_required
         )
+        self.initial_yaw_range = (yaw_min, yaw_max)
+        self.current_initial_yaw = None
+        self.current_initial_yaw_offset = None
         self.render_mode = render_mode
 
         self.step_count = 0
@@ -135,6 +153,64 @@ class LiberoPushingEnvV1(gym.Env):
         env = self._get_libero_task_env()
         body_name = env.objects_dict["plate_1"].root_body
         return np.asarray(env.sim.data.get_body_xvelp(body_name), dtype=np.float32).copy()
+
+    def _get_plate_joint_name(self):
+        env = self._get_libero_task_env()
+        joints = env.objects_dict["plate_1"].joints
+        if not joints:
+            raise RuntimeError("Plate object has no free joint")
+        return joints[0]
+
+    def _get_plate_world_yaw(self):
+        env = self._get_libero_task_env()
+        body_name = env.objects_dict["plate_1"].root_body
+        w, x, y, z = np.asarray(
+            env.sim.data.get_body_xquat(body_name),
+            dtype=np.float64,
+        )
+        return float(
+            np.arctan2(
+                2.0 * (w * z + x * y),
+                1.0 - 2.0 * (y * y + z * z),
+            )
+        )
+
+    def _randomize_plate_yaw(self):
+        """Apply world-Z yaw because this LIBERO ignores BDDL plate yaw."""
+        env = self._get_libero_task_env()
+        sim = env.sim
+        joint_name = self._get_plate_joint_name()
+        joint_qpos = np.asarray(
+            sim.data.get_joint_qpos(joint_name),
+            dtype=np.float64,
+        ).copy()
+        if joint_qpos.shape != (7,):
+            raise RuntimeError(
+                "Expected a 7D free-joint qpos for plate_1, "
+                f"got {joint_qpos.shape}"
+            )
+
+        yaw_offset = float(
+            self.np_random.uniform(*self.initial_yaw_range)
+        )
+        half_yaw = 0.5 * yaw_offset
+        yaw_quaternion = np.asarray(
+            [np.cos(half_yaw), 0.0, 0.0, np.sin(half_yaw)],
+            dtype=np.float64,
+        )
+        quaternion = np.empty(4, dtype=np.float64)
+        mujoco.mju_mulQuat(
+            quaternion,
+            yaw_quaternion,
+            joint_qpos[3:],
+        )
+        quaternion /= np.linalg.norm(quaternion)
+        joint_qpos[3:] = quaternion
+        sim.data.set_joint_qpos(joint_name, joint_qpos)
+        sim.forward()
+
+        self.current_initial_yaw_offset = yaw_offset
+        self.current_initial_yaw = self._get_plate_world_yaw()
 
     def _update_stable_success(
             self,
@@ -368,6 +444,10 @@ class LiberoPushingEnvV1(gym.Env):
                 self.current_contact_friction
             )
 
+        # Keep friction sampling first so existing seed-to-friction
+        # mappings remain stable when yaw randomization is introduced.
+        self._randomize_plate_yaw()
+
         self.prev_reach_distance, self.prev_goal_distance = (
             self._compute_distances(obs)
         )
@@ -408,6 +488,13 @@ class LiberoPushingEnvV1(gym.Env):
             "stable_success": False,
             "stable_count": 0,
             "object_speed": object_speed,
+            "initial_plate_x": float(plate_position[0]),
+            "initial_plate_y": float(plate_position[1]),
+            "initial_plate_z": float(plate_position[2]),
+            "initial_plate_yaw": self.current_initial_yaw,
+            "initial_plate_yaw_offset": (
+                self.current_initial_yaw_offset
+            ),
             "reach_distance": self.prev_reach_distance,
             "goal_distance": self.prev_goal_distance,
             "friction": self.current_friction,
