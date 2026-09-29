@@ -9,11 +9,12 @@ from datetime import datetime
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
+import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 
-from envs.pushing_env import LiberoPushingEnv
+from envs import ENV_IDS, make_pushing_env
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -104,6 +105,15 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--env-version",
+        choices=sorted(ENV_IDS),
+        default="v0",
+        help=(
+            "Environment benchmark version. "
+            "Defaults to v0 for backward compatibility."
+        ),
+    )
+    parser.add_argument(
         "--observation-mode",
         choices=sorted(OBSERVATION_MODES),
         default="pos6",
@@ -145,6 +155,10 @@ def main():
 
     friction_range = None
     if args.friction_min is not None:
+        if not np.isfinite(
+            [args.friction_min, args.friction_max]
+        ).all():
+            raise ValueError("Friction bounds must be finite.")
         if args.friction_min <= 0 or args.friction_max <= 0:
             raise ValueError("Friction bounds must be positive.")
         if args.friction_min > args.friction_max:
@@ -190,12 +204,29 @@ def main():
     tensorboard_dir.mkdir(parents=True)
     evaluations_dir.mkdir(parents=True)
 
-    info_keywords = (
+    info_keywords = [
         "is_success",
         "goal_distance",
         "friction",
         "contact_friction",
-    )
+    ]
+
+    if args.env_version == "v1":
+        info_keywords.extend(
+            [
+                "libero_success",
+                "distance_success",
+                "stable_success",
+                "stable_count",
+                "object_speed",
+                "termination_reason",
+                "invalid_state",
+                "out_of_workspace",
+                "time_limit",
+            ]
+        )
+
+    info_keywords = tuple(info_keywords)
 
     config = {
         "schema_version": 1,
@@ -223,6 +254,8 @@ def main():
             "ent_coef_argument": args.ent_coef,
         },
         "environment": {
+            "env_version": args.env_version,
+            "env_id": ENV_IDS[args.env_version],
             "observation_mode": args.observation_mode,
             "observation_dimension": observation_dim,
             "include_object_velocity": include_velocity,
@@ -250,14 +283,48 @@ def main():
     env = None
 
     try:
+        raw_env = make_pushing_env(
+            args.env_version,
+            friction_range=friction_range,
+            include_object_velocity=include_velocity,
+            include_contact_force=include_force,
+        )
+
         env = Monitor(
-            LiberoPushingEnv(
-                friction_range=friction_range,
-                include_object_velocity=include_velocity,
-                include_contact_force=include_force,
-            ),
+            raw_env,
             info_keywords=info_keywords,
         )
+
+        config["environment"]["bddl_file"] = (
+            raw_env.base_env.bddl_file
+        )
+
+        if args.env_version == "v1":
+            config["environment"]["success_definition"] = (
+                "distance_and_speed_stable"
+            )
+            config["environment"]["benchmark_parameters"] = {
+                "success_radius": raw_env.success_radius,
+                "object_speed_threshold": (
+                    raw_env.object_speed_threshold
+                ),
+                "stable_steps_required": (
+                    raw_env.stable_steps_required
+                ),
+                "initial_yaw_range": list(
+                    raw_env.initial_yaw_range
+                ),
+                "workspace_margin": raw_env.workspace_margin,
+                "workspace_z_tolerance": (
+                    raw_env.workspace_z_tolerance
+                ),
+            }
+        else:
+            config["environment"]["success_definition"] = (
+                "legacy_libero_or_distance"
+            )
+
+        write_config(config_path, config)
 
         if args.resume:
             resume_path = Path(args.resume).resolve()
