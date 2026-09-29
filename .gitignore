@@ -29,3 +29,7 @@ outputs/models/*/
 
 # Per-run generated artifacts
 outputs/runs/
+
+# Generated calibration results
+outputs/calibration/
+
