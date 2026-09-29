@@ -4,7 +4,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts import evaluate_ppo, train_ppo
+from scripts import (
+    evaluate_feedback_baseline,
+    evaluate_ppo,
+    train_ppo,
+)
 
 
 def test_train_defaults_to_v0(monkeypatch):
@@ -21,6 +25,34 @@ def test_train_accepts_v1(monkeypatch):
     )
     args = train_ppo.parse_args()
     assert args.env_version == "v1"
+
+
+def test_feedback_evaluation_defaults_to_pi_no_release(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["evaluate_feedback_baseline.py"],
+    )
+    args = evaluate_feedback_baseline.parse_args()
+    assert args.controller_variant == "pi_no_release"
+
+
+def test_feedback_evaluation_accepts_settle_variant(
+    monkeypatch,
+):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "evaluate_feedback_baseline.py",
+            "--controller-variant",
+            "hybrid_pi_settle",
+        ],
+    )
+    args = evaluate_feedback_baseline.parse_args()
+    assert args.controller_variant == "hybrid_pi_settle"
 
 
 @pytest.mark.parametrize(

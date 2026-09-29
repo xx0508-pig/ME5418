@@ -6,14 +6,26 @@ from enum import Enum
 import numpy as np
 
 
+PI_NO_RELEASE = "pi_no_release"
+HYBRID_PI_SETTLE = "hybrid_pi_settle"
+CONTROLLER_VARIANTS = (
+    PI_NO_RELEASE,
+    HYBRID_PI_SETTLE,
+)
+
+
 class ControllerPhase(str, Enum):
     APPROACH = "approach"
     DESCEND = "descend"
     PUSH = "push"
+    SETTLE = "settle"
 
 
 @dataclass(frozen=True)
 class FeedbackControllerConfig:
+    # False 保留原始 PI baseline；True 启用人工接触释放阶段。
+    enable_settle: bool = False
+
     # LIBERO 控制频率为 20 Hz。
     control_dt: float = 0.05
 
@@ -22,14 +34,16 @@ class FeedbackControllerConfig:
     hover_height_offset: float = 0.18
     push_height_offset: float = 0.01
 
-    # 三个阶段的位置控制参数。
+    # 各阶段的位置控制参数（SETTLE 可选）。
     approach_gain: float = 6.0
     descend_gain: float = 6.0
     push_position_gain: float = 8.0
+    settle_gain: float = 6.0
 
     approach_max_action: float = 0.70
     descend_max_action: float = 0.50
     push_max_action: float = 0.55
+    settle_max_action: float = 0.45
     vertical_action_limit: float = 0.25
 
     approach_tolerance: float = 0.025
@@ -39,6 +53,13 @@ class FeedbackControllerConfig:
     success_radius: float = 0.06
     slowdown_distance: float = 0.14
     max_object_speed: float = 0.06
+
+    # 盘子进入目标区后，机械臂后撤并抬升以释放接触。
+    settle_backoff_distance: float = 0.04
+    settle_height_offset: float = 0.08
+
+    # 只有盘子明显滑出目标区才重新接近，避免在边界反复切换。
+    goal_exit_hysteresis: float = 0.015
 
     # PI 速度反馈参数。
     velocity_feedforward_gain: float = 0.25
@@ -63,6 +84,30 @@ class FeedbackControllerConfig:
         if self.integral_limit <= 0:
             raise ValueError("integral_limit must be positive")
 
+        if self.settle_backoff_distance <= 0:
+            raise ValueError(
+                "settle_backoff_distance must be positive"
+            )
+
+        if self.settle_height_offset <= self.push_height_offset:
+            raise ValueError(
+                "settle_height_offset must exceed "
+                "push_height_offset"
+            )
+
+        if self.settle_gain <= 0:
+            raise ValueError("settle_gain must be positive")
+
+        if self.settle_max_action <= 0:
+            raise ValueError(
+                "settle_max_action must be positive"
+            )
+
+        if self.goal_exit_hysteresis <= 0:
+            raise ValueError(
+                "goal_exit_hysteresis must be positive"
+            )
+
         if self.lead_min > self.lead_max:
             raise ValueError(
                 "lead_min cannot exceed lead_max"
@@ -72,9 +117,29 @@ class FeedbackControllerConfig:
         return asdict(self)
 
 
+def make_feedback_controller_config(
+    variant,
+    **overrides,
+):
+    """Build an explicit, reproducible baseline variant."""
+
+    if variant not in CONTROLLER_VARIANTS:
+        raise ValueError(
+            f"Unknown controller variant: {variant!r}. "
+            f"Expected one of {CONTROLLER_VARIANTS}."
+        )
+
+    return FeedbackControllerConfig(
+        enable_settle=(
+            variant == HYBRID_PI_SETTLE
+        ),
+        **overrides,
+    )
+
+
 class ConventionalFeedbackController:
     """
-    Three-stage geometric controller with PI object-speed feedback.
+    Geometric PI controller with an optional SETTLE phase.
 
     Expected observation:
         obs[0:3] = plate_position - eef_position
@@ -107,6 +172,10 @@ class ConventionalFeedbackController:
             [1.0, 0.0],
             dtype=np.float64,
         )
+
+        # SETTLE 阶段沿进入目标区时的反方向后撤，避免目标方向
+        # 在接近中心时快速改变而造成机械臂来回摆动。
+        self.settle_direction = self.last_direction.copy()
 
         self.last_diagnostics = {}
 
@@ -280,6 +349,65 @@ class ConventionalFeedbackController:
             ):
                 self.phase = ControllerPhase.PUSH
                 self.integral_error = 0.0
+
+            self.last_diagnostics = {
+                "phase": self.phase.value,
+                "goal_distance": goal_distance,
+                "position_error": float(
+                    np.linalg.norm(position_error)
+                ),
+            }
+
+            return action
+
+        # 盘子首次进入目标区后，停止 PI 推动并释放接触。
+        if (
+            config.enable_settle
+            and self.phase == ControllerPhase.PUSH
+            and goal_distance <= config.success_radius
+        ):
+            self.phase = ControllerPhase.SETTLE
+            self.integral_error = 0.0
+            self.settle_direction = direction.copy()
+
+        # ----------------------------------------------------
+        # Stage 4: back off and lift to let the plate settle.
+        # ----------------------------------------------------
+
+        if self.phase == ControllerPhase.SETTLE:
+            # 使用回滞边界，防止距离在 0.06 m 附近时逐步抖动。
+            if (
+                goal_distance
+                > config.success_radius
+                + config.goal_exit_hysteresis
+            ):
+                self.phase = ControllerPhase.APPROACH
+                self.integral_error = 0.0
+
+                action, position_error = (
+                    self._position_action(
+                        plate_minus_eef,
+                        direction,
+                        xy_offset=-config.behind_distance,
+                        z_offset=config.hover_height_offset,
+                        gain=config.approach_gain,
+                        limit=config.approach_max_action,
+                    )
+                )
+            else:
+                action, position_error = (
+                    self._position_action(
+                        plate_minus_eef,
+                        self.settle_direction,
+                        xy_offset=-config.settle_backoff_distance,
+                        z_offset=config.settle_height_offset,
+                        gain=config.settle_gain,
+                        limit=config.settle_max_action,
+                        vertical_limit=(
+                            config.vertical_action_limit
+                        ),
+                    )
+                )
 
             self.last_diagnostics = {
                 "phase": self.phase.value,

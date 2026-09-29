@@ -21,8 +21,10 @@ import imageio.v2 as imageio
 import numpy as np
 
 from controllers.conventional_feedback import (
+    CONTROLLER_VARIANTS,
+    PI_NO_RELEASE,
     ConventionalFeedbackController,
-    FeedbackControllerConfig,
+    make_feedback_controller_config,
 )
 from envs import V1_ENV_ID, make_pushing_env
 
@@ -145,6 +147,16 @@ def range_or_none(values):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--controller-variant",
+        choices=CONTROLLER_VARIANTS,
+        default=PI_NO_RELEASE,
+        help=(
+            "pi_no_release preserves the original PI baseline; "
+            "hybrid_pi_settle adds an explicit contact-release phase."
+        ),
+    )
 
     parser.add_argument(
         "--run-name",
@@ -360,7 +372,8 @@ def main():
     )
 
     controller_config = (
-        FeedbackControllerConfig(
+        make_feedback_controller_config(
+            args.controller_variant,
             velocity_kp=args.velocity_kp,
             velocity_ki=args.velocity_ki,
             max_object_speed=(
@@ -425,7 +438,9 @@ def main():
             ),
         },
         "controller": {
-            "name": "pi_velocity_feedback",
+            "family": "pi_velocity_feedback",
+            "variant": args.controller_variant,
+            "name": args.controller_variant,
             "parameters": (
                 controller_config.to_dict()
             ),
