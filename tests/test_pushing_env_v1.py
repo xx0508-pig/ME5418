@@ -68,6 +68,30 @@ def test_v1_environment_smoke():
         env.close()
 
 
+@pytest.mark.integration
+def test_v1_xy_force_observation_is_11d():
+    env = LiberoPushingEnvV1(
+        max_steps=2,
+        observation_size=32,
+        include_object_velocity=True,
+        include_contact_force=True,
+        contact_force_components=2,
+    )
+
+    try:
+        observation, _ = env.reset(seed=42)
+        assert observation.shape == (11,)
+        assert np.isfinite(observation).all()
+
+        observation, _, _, _, _ = env.step(
+            np.zeros(3, dtype=np.float32)
+        )
+        assert observation.shape == (11,)
+        assert np.isfinite(observation).all()
+    finally:
+        env.close()
+
+
 def test_stable_success_requires_five_steps():
     env = LiberoPushingEnvV1(
         stable_steps_required=5,

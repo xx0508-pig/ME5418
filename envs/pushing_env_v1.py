@@ -24,6 +24,7 @@ class LiberoPushingEnvV1(gym.Env):
             bddl_file=DEFAULT_BDDL_V1,
             include_object_velocity=False,
             include_contact_force=False,
+            contact_force_components=3,
             friction_range=None,
             success_radius=0.06,
             object_speed_threshold=0.02,
@@ -85,6 +86,20 @@ class LiberoPushingEnvV1(gym.Env):
         self.include_contact_force = bool(
             include_contact_force
         )
+        requested_force_components = int(
+            contact_force_components
+        )
+        if self.include_contact_force:
+            if requested_force_components not in {2, 3}:
+                raise ValueError(
+                    "contact_force_components must be 2 or 3 "
+                    "when contact force is enabled"
+                )
+            self.contact_force_components = (
+                requested_force_components
+            )
+        else:
+            self.contact_force_components = 0
         self.friction_range = friction_range
         self.success_radius = float(success_radius)
         self.object_speed_threshold = float(
@@ -104,7 +119,7 @@ class LiberoPushingEnvV1(gym.Env):
         obs_dim = (
                 6
                 + 3 * self.include_object_velocity
-                + 3 * self.include_contact_force
+                + self.contact_force_components
         )
 
         self.observation_space = spaces.Box(
@@ -399,7 +414,11 @@ class LiberoPushingEnvV1(gym.Env):
         if self.include_object_velocity:
             parts.append(self._get_plate_velocity())
         if self.include_contact_force:
-            parts.append(self._get_contact_force())
+            parts.append(
+                self._get_contact_force()[
+                    :self.contact_force_components
+                ]
+            )
         return np.concatenate(parts).astype(np.float32)
 
     def _compute_distances(self, obs):

@@ -27,6 +27,23 @@ def test_train_accepts_v1(monkeypatch):
     assert args.env_version == "v1"
 
 
+def test_train_accepts_formal_force_history_mode(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "train_ppo.py",
+            "--observation-mode",
+            "posvel_force11",
+            "--history-length",
+            "4",
+        ],
+    )
+    args = train_ppo.parse_args()
+    assert args.observation_mode == "posvel_force11"
+    assert args.history_length == 4
+
+
 def test_feedback_evaluation_defaults_to_pi_no_release(
     monkeypatch,
 ):
@@ -127,6 +144,71 @@ def test_old_run_config_defaults_to_v0(tmp_path):
 
     assert context["training_env_version"] == "v0"
     assert context["evaluation_env_version"] == "v0"
+    assert context["history_length"] == 1
+
+
+def test_evaluation_reads_history_from_run_config(tmp_path):
+    run_dir = tmp_path / "history_run"
+    run_dir.mkdir()
+    (run_dir / "config.json").write_text(
+        json.dumps(
+            {
+                "environment": {
+                    "env_version": "v1",
+                    "observation_mode": "posvel_force11",
+                    "history_length": 4,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "final_model.zip").touch()
+
+    args = SimpleNamespace(
+        run_dir=str(run_dir),
+        model=None,
+        output_dir=None,
+        observation_mode=None,
+        history_length=None,
+        env_version=None,
+    )
+    context = evaluate_ppo.resolve_evaluation_context(args)
+
+    assert context["observation_mode"] == "posvel_force11"
+    assert context["history_length"] == 4
+
+
+def test_evaluation_rejects_history_mismatch(tmp_path):
+    run_dir = tmp_path / "history_run"
+    run_dir.mkdir()
+    (run_dir / "config.json").write_text(
+        json.dumps(
+            {
+                "environment": {
+                    "env_version": "v1",
+                    "observation_mode": "posvel9",
+                    "history_length": 4,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (run_dir / "final_model.zip").touch()
+
+    args = SimpleNamespace(
+        run_dir=str(run_dir),
+        model=None,
+        output_dir=None,
+        observation_mode=None,
+        history_length=1,
+        env_version=None,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="history-length does not match",
+    ):
+        evaluate_ppo.resolve_evaluation_context(args)
 
 
 def test_evaluation_version_can_override_training_version(tmp_path):

@@ -18,16 +18,33 @@ class LiberoPushingEnv(gym.Env):
 
     def __init__(self, max_steps=300, action_scale=0.5, observation_size=64,
                  bddl_file=DEFAULT_BDDL, include_object_velocity=False,
-                 include_contact_force=False, friction_range=None,
+                 include_contact_force=False, contact_force_components=3,
+                 friction_range=None,
                  success_radius=0.06, render_mode="rgb_array"):
         super().__init__()
         self.max_steps, self.action_scale = int(max_steps), float(action_scale)
         self.include_object_velocity = bool(include_object_velocity)
         self.include_contact_force = bool(include_contact_force)
+        requested_force_components = int(contact_force_components)
+        if self.include_contact_force:
+            if requested_force_components not in {2, 3}:
+                raise ValueError(
+                    "contact_force_components must be 2 or 3 "
+                    "when contact force is enabled"
+                )
+            self.contact_force_components = (
+                requested_force_components
+            )
+        else:
+            self.contact_force_components = 0
         self.friction_range, self.success_radius = friction_range, float(success_radius)
         self.render_mode = render_mode
         self.step_count = 0
-        obs_dim = 6 + 3 * self.include_object_velocity + 3 * self.include_contact_force
+        obs_dim = (
+            6
+            + 3 * self.include_object_velocity
+            + self.contact_force_components
+        )
         self.observation_space = spaces.Box(-np.inf, np.inf, (obs_dim,), dtype=np.float32)
         self.action_space = spaces.Box(-1.0, 1.0, (3,), dtype=np.float32)
         self.base_env = ProjectLiberoEnv(bddl_file, observation_size)
@@ -154,7 +171,11 @@ class LiberoPushingEnv(gym.Env):
         if self.include_object_velocity:
             parts.append(self._get_plate_velocity())
         if self.include_contact_force:
-            parts.append(self._get_contact_force())
+            parts.append(
+                self._get_contact_force()[
+                    :self.contact_force_components
+                ]
+            )
         return np.concatenate(parts).astype(np.float32)
 
     def _compute_distances(self, obs):

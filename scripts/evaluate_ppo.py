@@ -12,15 +12,14 @@ import imageio.v2 as imageio
 import numpy as np
 from stable_baselines3 import PPO
 
-from envs import ENV_IDS, make_pushing_env
-
-
-OBSERVATION_MODES = {
-    "pos6": (False, False),
-    "posvel9": (True, False),
-    "posforce9": (False, True),
-    "posvelforce12": (True, True),
-}
+from envs import (
+    ENV_IDS,
+    OBSERVATION_MODES,
+    HistoryStackWrapper,
+    get_observation_mode_spec,
+    make_pushing_env,
+    stacked_observation_dimension,
+)
 
 
 def current_time():
@@ -62,6 +61,16 @@ def parse_args():
         help=(
             "Required for a legacy model without --run-dir. Otherwise "
             "read from the training config."
+        ),
+    )
+    parser.add_argument(
+        "--history-length",
+        type=int,
+        choices=[1, 4],
+        default=None,
+        help=(
+            "Required for a legacy history model. With --run-dir, "
+            "the value is read from config.json; old configs default to 1."
         ),
     )
     parser.add_argument(
@@ -193,6 +202,23 @@ def resolve_evaluation_context(args):
                 f"{args.observation_mode!r} != {observation_mode!r}"
             )
 
+        history_length = int(
+            environment_config.get("history_length", 1)
+        )
+        requested_history_length = getattr(
+            args,
+            "history_length",
+            None,
+        )
+        if (
+            requested_history_length is not None
+            and requested_history_length != history_length
+        ):
+            raise ValueError(
+                "--history-length does not match config.json: "
+                f"{requested_history_length!r} != {history_length!r}"
+            )
+
         training_env_version = environment_config.get(
             "env_version",
             "v0",
@@ -231,6 +257,16 @@ def resolve_evaluation_context(args):
         model_path = Path(args.model).resolve()
         evaluation_dir = Path(args.output_dir).resolve()
         observation_mode = args.observation_mode
+        requested_history_length = getattr(
+            args,
+            "history_length",
+            None,
+        )
+        history_length = (
+            requested_history_length
+            if requested_history_length is not None
+            else 1
+        )
         training_env_version = None
         evaluation_env_version = args.env_version
 
@@ -248,6 +284,7 @@ def resolve_evaluation_context(args):
         "model_path": model_path,
         "evaluation_dir": evaluation_dir,
         "observation_mode": observation_mode,
+        "history_length": history_length,
         "training_env_version": training_env_version,
         "evaluation_env_version": evaluation_env_version,
     }
@@ -291,10 +328,11 @@ def main():
     context = resolve_evaluation_context(args)
     model_path = context["model_path"]
     observation_mode = context["observation_mode"]
+    history_length = context["history_length"]
     evaluation_env_version = context["evaluation_env_version"]
-    include_velocity, include_force = OBSERVATION_MODES[
+    observation_spec = get_observation_mode_spec(
         observation_mode
-    ]
+    )
 
     evaluation_dir = context["evaluation_dir"]
     evaluation_dir.mkdir(parents=True, exist_ok=True)
@@ -318,14 +356,25 @@ def main():
     frames = []
     results = []
     try:
-        env = make_pushing_env(
+        raw_env = make_pushing_env(
             evaluation_env_version,
             max_steps=300,
             action_scale=0.5,
             observation_size=256,
             friction_range=friction_range,
-            include_object_velocity=include_velocity,
-            include_contact_force=include_force,
+            include_object_velocity=(
+                observation_spec.include_object_velocity
+            ),
+            include_contact_force=(
+                observation_spec.include_contact_force
+            ),
+            contact_force_components=(
+                observation_spec.contact_force_components
+            ),
+        )
+        env = HistoryStackWrapper(
+            raw_env,
+            history_length=history_length,
         )
         model = PPO.load(str(model_path), env=env, device="cpu")
 
@@ -550,6 +599,20 @@ def main():
                 "training_env_version"
             ],
             "observation_mode": observation_mode,
+            "base_observation_dimension": (
+                observation_spec.dimension
+            ),
+            "history_length": history_length,
+            "stacked_observation_dimension": (
+                stacked_observation_dimension(
+                    observation_spec.dimension,
+                    3,
+                    history_length,
+                )
+            ),
+            "contact_force_axes": list(
+                observation_spec.contact_force_axes
+            ),
         },
         "metrics": {
             "success_count": int(sum(successes)),

@@ -10,20 +10,21 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import numpy as np
+import torch.nn as nn
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.monitor import Monitor
 
-from envs import ENV_IDS, make_pushing_env
+from envs import (
+    ENV_IDS,
+    OBSERVATION_MODES,
+    HistoryStackWrapper,
+    get_observation_mode_spec,
+    make_pushing_env,
+    stacked_observation_dimension,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-OBSERVATION_MODES = {
-    "pos6": (False, False),
-    "posvel9": (True, False),
-    "posforce9": (False, True),
-    "posvelforce12": (True, True),
-}
 
 def current_time():
     return datetime.now().astimezone().isoformat(
@@ -118,6 +119,16 @@ def parse_args():
         choices=sorted(OBSERVATION_MODES),
         default="pos6",
     )
+    parser.add_argument(
+        "--history-length",
+        type=int,
+        choices=[1, 4],
+        default=1,
+        help=(
+            "Number of observation frames in the fixed history. "
+            "Use 1 for memoryless PPO or 4 for the formal history ablation."
+        ),
+    )
     parser.add_argument("--resume", default=None, help="Existing .zip model to continue training.")
     parser.add_argument("--friction-min", type=float, default=None)
     parser.add_argument("--friction-max", type=float, default=None)
@@ -132,21 +143,30 @@ def parse_args():
 def main():
     args = parse_args()
 
-    observation_modes = {
-        "pos6": (False, False),
-        "posvel9": (True, False),
-        "posforce9": (False, True),
-        "posvelforce12": (True, True),
-    }
-    include_velocity, include_force = observation_modes[
+    observation_spec = get_observation_mode_spec(
         args.observation_mode
-    ]
-
-    observation_dim = (
-        6
-        + (3 if include_velocity else 0)
-        + (3 if include_force else 0)
     )
+    base_observation_dim = observation_spec.dimension
+    action_dim = 3
+    stacked_observation_dim = stacked_observation_dimension(
+        base_observation_dim,
+        action_dim,
+        args.history_length,
+    )
+
+    history_layout = ["obs_t"]
+    for lag in range(1, args.history_length):
+        history_layout.extend(
+            [f"action_t-{lag}", f"obs_t-{lag}"]
+        )
+
+    policy_kwargs = {
+        "activation_fn": nn.ReLU,
+        "net_arch": {
+            "pi": [128, 128],
+            "vf": [128, 128],
+        },
+    }
 
     if (args.friction_min is None) != (args.friction_max is None):
         raise ValueError(
@@ -229,7 +249,7 @@ def main():
     info_keywords = tuple(info_keywords)
 
     config = {
-        "schema_version": 1,
+        "schema_version": 2,
         "status": "created",
         "created_at": current_time(),
         "command": {
@@ -257,15 +277,43 @@ def main():
             "env_version": args.env_version,
             "env_id": ENV_IDS[args.env_version],
             "observation_mode": args.observation_mode,
-            "observation_dimension": observation_dim,
-            "include_object_velocity": include_velocity,
-            "include_contact_force": include_force,
+            # Keep this legacy key equal to the actual model input size.
+            "observation_dimension": stacked_observation_dim,
+            "base_observation_dimension": base_observation_dim,
+            "history_length": args.history_length,
+            "stacked_observation_dimension": (
+                stacked_observation_dim
+            ),
+            "history_layout": history_layout,
+            "include_object_velocity": (
+                observation_spec.include_object_velocity
+            ),
+            "include_contact_force": (
+                observation_spec.include_contact_force
+            ),
+            "contact_force_components": (
+                observation_spec.contact_force_components
+            ),
+            "contact_force_axes": list(
+                observation_spec.contact_force_axes
+            ),
+            "formal_observation_mode": observation_spec.formal,
             "requested_friction_range": (
                 list(friction_range)
                 if friction_range is not None
                 else None
             ),
             "runtime_friction_validation": True,
+        },
+        "policy": {
+            "type": "MlpPolicy",
+            "actor_hidden_layers": [128, 128],
+            "critic_hidden_layers": [128, 128],
+            "activation": "ReLU",
+            "applies_to_fresh_training": args.resume is None,
+            "resume_preserves_saved_architecture": (
+                args.resume is not None
+            ),
         },
         "artifacts": {
             "config_path": str(config_path.resolve()),
@@ -286,12 +334,23 @@ def main():
         raw_env = make_pushing_env(
             args.env_version,
             friction_range=friction_range,
-            include_object_velocity=include_velocity,
-            include_contact_force=include_force,
+            include_object_velocity=(
+                observation_spec.include_object_velocity
+            ),
+            include_contact_force=(
+                observation_spec.include_contact_force
+            ),
+            contact_force_components=(
+                observation_spec.contact_force_components
+            ),
         )
 
-        env = Monitor(
+        history_env = HistoryStackWrapper(
             raw_env,
+            history_length=args.history_length,
+        )
+        env = Monitor(
+            history_env,
             info_keywords=info_keywords,
         )
 
@@ -360,6 +419,7 @@ def main():
                 gamma=0.99,
                 gae_lambda=0.95,
                 clip_range=0.2,
+                policy_kwargs=policy_kwargs,
                 ent_coef=(
                     args.ent_coef
                     if args.ent_coef is not None

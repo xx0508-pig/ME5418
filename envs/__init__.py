@@ -2,6 +2,14 @@ from gymnasium.envs.registration import register, registry
 
 from .pushing_env import LiberoPushingEnv
 from .pushing_env_v1 import LiberoPushingEnvV1
+from .history_wrapper import HistoryStackWrapper
+from .observation_modes import (
+    FORMAL_OBSERVATION_MODES,
+    OBSERVATION_MODES,
+    ObservationModeSpec,
+    get_observation_mode_spec,
+    stacked_observation_dimension,
+)
 
 
 V0_ENV_ID = "ContactAwarePushing-LIBERO-v0"
@@ -55,6 +63,12 @@ __all__ = [
     "V1_ENV_ID",
     "ENV_IDS",
     "ENV_CLASSES",
+    "FORMAL_OBSERVATION_MODES",
+    "OBSERVATION_MODES",
+    "ObservationModeSpec",
+    "HistoryStackWrapper",
+    "get_observation_mode_spec",
+    "stacked_observation_dimension",
     "make_pushing_env",
     "LiberoPushingEnv",
     "LiberoPushingEnvV1",
