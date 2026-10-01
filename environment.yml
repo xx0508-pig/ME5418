@@ -1,0 +1,39 @@
+name: libero-rl
+
+channels:
+  - defaults
+
+dependencies:
+  - python=3.12.13
+  - pip=26.2.1
+  - git
+  - pip:
+      # Core simulation and reinforcement-learning stack.
+      - numpy==2.2.6
+      - torch==2.11.0
+      - gymnasium==1.3.0
+      - mujoco==3.8.1
+      - stable-baselines3==2.9.0
+
+      # LIBERO and its supporting robotics packages.
+      - hf-libero==0.1.4
+      - bddl==1.0.1
+      - robosuite==1.4.0
+      - robomimic==0.2.0
+      - einops==0.8.2
+      - hf-egl-probe==1.0.2
+      - hydra-core==1.3.6
+      - matplotlib==3.11.1
+      - opencv-python==5.0.0.93
+      - thop==0.1.1.post2209072238
+      - transformers==5.5.4
+      - wandb==0.27.2
+
+      # Experiment logging, video export, and tests.
+      - imageio==2.37.4
+      - imageio-ffmpeg==0.6.0
+      - tensorboard==2.21.0
+      - pytest==9.1.1
+
+      # Used by legacy inspection helpers; pin the verified source revision.
+      - "lerobot @ git+https://github.com/huggingface/lerobot.git@2774d9bddcbbda50e697e162e89e7eaada8d7105"
