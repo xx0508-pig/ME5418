@@ -66,6 +66,27 @@ FORMAL_OBSERVATION_MODES = tuple(
     if spec.formal
 )
 
+POSITION_CHANNEL_NAMES = (
+    "plate_minus_eef_x",
+    "plate_minus_eef_y",
+    "plate_minus_eef_z",
+    "goal_minus_plate_x",
+    "goal_minus_plate_y",
+    "goal_minus_plate_z",
+)
+
+VELOCITY_CHANNEL_NAMES = (
+    "plate_velocity_x",
+    "plate_velocity_y",
+    "plate_velocity_z",
+)
+
+FORCE_CHANNEL_NAMES = (
+    "contact_force_x",
+    "contact_force_y",
+    "contact_force_z",
+)
+
 
 def get_observation_mode_spec(name):
     try:
@@ -76,6 +97,23 @@ def get_observation_mode_spec(name):
             f"Unknown observation mode {name!r}. "
             f"Supported modes: {supported}"
         ) from exc
+
+
+def get_observation_channel_names(name):
+    spec = get_observation_mode_spec(name)
+    names = list(POSITION_CHANNEL_NAMES)
+    if spec.include_object_velocity:
+        names.extend(VELOCITY_CHANNEL_NAMES)
+    if spec.include_contact_force:
+        names.extend(
+            FORCE_CHANNEL_NAMES[: spec.contact_force_components]
+        )
+    if len(names) != spec.dimension:
+        raise RuntimeError(
+            f"Observation channel definition for {name!r} has "
+            f"{len(names)} names but dimension {spec.dimension}."
+        )
+    return tuple(names)
 
 
 def stacked_observation_dimension(

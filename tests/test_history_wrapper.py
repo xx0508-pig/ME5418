@@ -4,8 +4,14 @@ import pytest
 from gymnasium import spaces
 
 from envs.history_wrapper import HistoryStackWrapper
+from envs.fixed_normalization import (
+    FixedObservationNormalizationWrapper,
+    fixed_v1_scales,
+)
+from envs.observation_statistics import ObservationStatisticsWrapper
 from envs.observation_modes import (
     FORMAL_OBSERVATION_MODES,
+    get_observation_channel_names,
     get_observation_mode_spec,
     stacked_observation_dimension,
 )
@@ -64,6 +70,77 @@ def test_formal_observation_mode_dimensions():
     assert force_spec.dimension == 11
     assert force_spec.contact_force_components == 2
     assert force_spec.contact_force_axes == ("x", "y")
+    assert get_observation_channel_names("posvel_force11") == (
+        "plate_minus_eef_x",
+        "plate_minus_eef_y",
+        "plate_minus_eef_z",
+        "goal_minus_plate_x",
+        "goal_minus_plate_y",
+        "goal_minus_plate_z",
+        "plate_velocity_x",
+        "plate_velocity_y",
+        "plate_velocity_z",
+        "contact_force_x",
+        "contact_force_y",
+    )
+
+
+def test_observation_statistics_collects_reset_and_steps():
+    env = ObservationStatisticsWrapper(
+        CountingEnv(observation_dimension=2),
+        channel_names=("first", "second"),
+    )
+    env.reset()
+    env.step(np.array([0.0], dtype=np.float32))
+    env.step(np.array([0.0], dtype=np.float32))
+
+    summary = env.summary()
+
+    assert summary["sample_count"] == 3
+    assert summary["observation_dimension"] == 2
+    first, second = summary["channels"]
+    assert first["channel"] == "first"
+    assert first["mean"] == pytest.approx(1.0)
+    assert first["std"] == pytest.approx(np.sqrt(2.0 / 3.0))
+    assert first["min"] == 0.0
+    assert first["max"] == 2.0
+    assert first["p50"] == 1.0
+    assert second["channel"] == "second"
+    assert second["mean"] == pytest.approx(2.0)
+
+
+def test_observation_statistics_does_not_change_observation():
+    base_env = CountingEnv(observation_dimension=2)
+    env = ObservationStatisticsWrapper(
+        base_env,
+        channel_names=("first", "second"),
+    )
+    observation, info = env.reset(seed=42)
+    next_observation, reward, terminated, truncated, step_info = (
+        env.step(np.array([0.25], dtype=np.float32))
+    )
+
+    np.testing.assert_array_equal(
+        observation,
+        np.array([0.0, 1.0], dtype=np.float32),
+    )
+    np.testing.assert_array_equal(
+        next_observation,
+        np.array([1.0, 2.0], dtype=np.float32),
+    )
+    assert info == {"reset": True}
+    assert reward == 0.0
+    assert not terminated
+    assert not truncated
+    assert step_info == {"step": 1}
+
+
+def test_observation_statistics_rejects_wrong_channel_count():
+    with pytest.raises(ValueError, match="Channel-name count"):
+        ObservationStatisticsWrapper(
+            CountingEnv(observation_dimension=2),
+            channel_names=("only_one",),
+        )
 
 
 @pytest.mark.parametrize(
@@ -198,3 +275,34 @@ def test_invalid_history_length_is_rejected():
 def test_unknown_observation_mode_is_rejected():
     with pytest.raises(ValueError):
         get_observation_mode_spec("unknown")
+
+
+def test_fixed_normalization_scales_and_clips_before_history():
+    base_env = CountingEnv(observation_dimension=9, action_dimension=3)
+    normalized = FixedObservationNormalizationWrapper(
+        base_env,
+        observation_mode="posvel9",
+    )
+    history = HistoryStackWrapper(normalized, history_length=4)
+
+    observation, _ = history.reset()
+
+    expected_frame = np.clip(
+        np.arange(9, dtype=np.float32)
+        / fixed_v1_scales("posvel9"),
+        -5.0,
+        5.0,
+    )
+    np.testing.assert_allclose(observation[:9], expected_frame)
+    np.testing.assert_allclose(observation[12:21], expected_frame)
+    np.testing.assert_array_equal(observation[9:12], np.zeros(3))
+    assert history.observation_space.contains(observation)
+
+
+def test_fixed_normalization_preserves_zero():
+    env = FixedObservationNormalizationWrapper(
+        CountingEnv(observation_dimension=6),
+        observation_mode="pos6",
+    )
+    normalized = env.observation(np.zeros(6, dtype=np.float32))
+    np.testing.assert_array_equal(normalized, np.zeros(6))

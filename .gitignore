@@ -33,3 +33,11 @@ outputs/runs/
 # Generated calibration results
 outputs/calibration/
 
+# Generated multi-model evaluation summaries
+outputs/evaluation_suites/
+
+# Generated checkpoint-screening results
+outputs/checkpoint_screening/
+
+# Generated multi-model training-suite logs and manifests
+outputs/training_suites/

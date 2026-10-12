@@ -3,10 +3,18 @@ from gymnasium.envs.registration import register, registry
 from .pushing_env import LiberoPushingEnv
 from .pushing_env_v1 import LiberoPushingEnvV1
 from .history_wrapper import HistoryStackWrapper
+from .observation_statistics import ObservationStatisticsWrapper
+from .fixed_normalization import (
+    NORMALIZATION_CHOICES,
+    FixedObservationNormalizationWrapper,
+    apply_observation_normalization,
+    normalization_metadata,
+)
 from .observation_modes import (
     FORMAL_OBSERVATION_MODES,
     OBSERVATION_MODES,
     ObservationModeSpec,
+    get_observation_channel_names,
     get_observation_mode_spec,
     stacked_observation_dimension,
 )
@@ -67,6 +75,12 @@ __all__ = [
     "OBSERVATION_MODES",
     "ObservationModeSpec",
     "HistoryStackWrapper",
+    "ObservationStatisticsWrapper",
+    "NORMALIZATION_CHOICES",
+    "FixedObservationNormalizationWrapper",
+    "apply_observation_normalization",
+    "normalization_metadata",
+    "get_observation_channel_names",
     "get_observation_mode_spec",
     "stacked_observation_dimension",
     "make_pushing_env",

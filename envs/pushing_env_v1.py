@@ -333,6 +333,25 @@ class LiberoPushingEnvV1(gym.Env):
             net += force if body1 == plate_body else -force
         return net.astype(np.float32)
 
+    def _contact_force_info(self):
+        """Return world-frame net force on the plate for diagnostics."""
+        force = np.asarray(self._get_contact_force(), dtype=np.float64)
+        if not np.isfinite(force).all():
+            return {
+                "contact_force_x": None,
+                "contact_force_y": None,
+                "contact_force_z": None,
+                "contact_force_xy": None,
+                "contact_force_norm": None,
+            }
+        return {
+            "contact_force_x": float(force[0]),
+            "contact_force_y": float(force[1]),
+            "contact_force_z": float(force[2]),
+            "contact_force_xy": float(np.linalg.norm(force[:2])),
+            "contact_force_norm": float(np.linalg.norm(force)),
+        }
+
     def _get_plate_table_contact_frictions(self):
         env = self._get_libero_task_env()
         sim = env.sim
@@ -526,6 +545,7 @@ class LiberoPushingEnvV1(gym.Env):
             "out_of_workspace": False,
             "time_limit": False,
         }
+        info.update(self._contact_force_info())
 
         return observation, info
 
@@ -691,6 +711,7 @@ class LiberoPushingEnvV1(gym.Env):
                 self.current_contact_friction
             ),
         }
+        info.update(self._contact_force_info())
 
         return (
             observation,

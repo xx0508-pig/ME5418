@@ -14,10 +14,15 @@ from stable_baselines3 import PPO
 
 from envs import (
     ENV_IDS,
+    NORMALIZATION_CHOICES,
     OBSERVATION_MODES,
     HistoryStackWrapper,
+    ObservationStatisticsWrapper,
+    apply_observation_normalization,
     get_observation_mode_spec,
+    get_observation_channel_names,
     make_pushing_env,
+    normalization_metadata,
     stacked_observation_dimension,
 )
 
@@ -103,6 +108,29 @@ def parse_args():
         action="store_true",
         help="Sample actions instead of using deterministic actions.",
     )
+    parser.add_argument(
+        "--observation-stats",
+        action="store_true",
+        help=(
+            "Collect per-channel base-observation scale statistics "
+            "and save them as CSV and JSON metadata."
+        ),
+    )
+    parser.add_argument(
+        "--normalization",
+        choices=NORMALIZATION_CHOICES,
+        default=None,
+        help=(
+            "Override normalization for a legacy model. Run-directory "
+            "evaluations normally read this from config.json."
+        ),
+    )
+    parser.add_argument(
+        "--contact-force-threshold",
+        type=float,
+        default=0.20,
+        help="XY net-contact-force threshold used for safety metrics.",
+    )
     return parser.parse_args()
 
 
@@ -131,6 +159,137 @@ def mean_or_none(values):
 
 def std_or_none(values):
     return float(np.std(values)) if values else None
+
+
+def wilson_interval(success_count, sample_count, z=1.959963984540054):
+    if sample_count == 0:
+        return None, None
+    proportion = success_count / sample_count
+    denominator = 1.0 + z * z / sample_count
+    center = (
+        proportion + z * z / (2.0 * sample_count)
+    ) / denominator
+    margin = z * np.sqrt(
+        proportion * (1.0 - proportion) / sample_count
+        + z * z / (4.0 * sample_count * sample_count)
+    ) / denominator
+    return float(center - margin), float(center + margin)
+
+
+def summarize_episode_rows(rows):
+    count = len(rows)
+    successes = sum(bool(row["success"]) for row in rows)
+    ci_low, ci_high = wilson_interval(successes, count)
+    force_samples = sum(
+        row.get("contact_force_sample_count", 0) for row in rows
+    )
+    force_exceedances = sum(
+        row.get("contact_force_exceedance_count", 0) for row in rows
+    )
+    return {
+        "episode_count": count,
+        "success_count": successes,
+        "success_rate": successes / count if count else None,
+        "success_rate_ci95": [ci_low, ci_high],
+        "mean_return": mean_or_none(
+            [row["episode_return"] for row in rows]
+        ),
+        "mean_episode_length": mean_or_none(
+            [row["episode_length"] for row in rows]
+        ),
+        "mean_final_goal_distance": mean_or_none(
+            [
+                row["final_goal_distance"]
+                for row in rows
+                if row["final_goal_distance"] is not None
+            ]
+        ),
+        "mean_peak_contact_force_xy": mean_or_none(
+            [
+                row["peak_contact_force_xy"]
+                for row in rows
+                if row["peak_contact_force_xy"] is not None
+            ]
+        ),
+        "max_peak_contact_force_xy": (
+            max(
+                row["peak_contact_force_xy"]
+                for row in rows
+                if row["peak_contact_force_xy"] is not None
+            )
+            if any(
+                row["peak_contact_force_xy"] is not None
+                for row in rows
+            )
+            else None
+        ),
+        "contact_force_exceedance_step_rate": (
+            force_exceedances / force_samples
+            if force_samples
+            else None
+        ),
+    }
+
+
+def _fixed_strata(rows, key, definitions):
+    output = []
+    for label, lower, upper in definitions:
+        members = [
+            row
+            for row in rows
+            if row.get(key) is not None
+            and row[key] >= lower
+            and row[key] < upper
+        ]
+        output.append(
+            {
+                "label": label,
+                "lower_inclusive": lower if np.isfinite(lower) else None,
+                "upper_exclusive": upper if np.isfinite(upper) else None,
+                **summarize_episode_rows(members),
+            }
+        )
+    return output
+
+
+def build_stratified_metrics(rows):
+    enriched = []
+    for row in rows:
+        item = dict(row)
+        yaw = item.get("initial_plate_yaw_offset")
+        item["absolute_initial_yaw_offset"] = (
+            abs(yaw) if yaw is not None else None
+        )
+        enriched.append(item)
+    return {
+        "contact_friction": _fixed_strata(
+            enriched,
+            "contact_friction",
+            (
+                ("low", -np.inf, 0.5),
+                ("medium", 0.5, 0.7),
+                ("high", 0.7, np.inf),
+            ),
+        ),
+        "initial_goal_distance": _fixed_strata(
+            enriched,
+            "initial_goal_distance",
+            (
+                ("near", -np.inf, 0.20),
+                ("medium", 0.20, 0.24),
+                ("far", 0.24, np.inf),
+            ),
+        ),
+        "absolute_initial_yaw_offset": _fixed_strata(
+            enriched,
+            "absolute_initial_yaw_offset",
+            (
+                ("small", -np.inf, 1.0 / 6.0),
+                ("medium", 1.0 / 6.0, 1.0 / 3.0),
+                ("large", 1.0 / 3.0, np.inf),
+            ),
+        ),
+    }
 
 
 def resolve_friction_range(args):
@@ -193,6 +352,28 @@ def resolve_evaluation_context(args):
         )
         environment_config = training_config["environment"]
         observation_mode = environment_config["observation_mode"]
+        saved_normalization = environment_config.get(
+            "normalization",
+            {"name": "none"},
+        )
+        if isinstance(saved_normalization, str):
+            saved_normalization_name = saved_normalization
+        else:
+            saved_normalization_name = saved_normalization.get(
+                "name",
+                "none",
+            )
+        requested_normalization = getattr(args, "normalization", None)
+        if (
+            requested_normalization is not None
+            and requested_normalization != saved_normalization_name
+        ):
+            raise ValueError(
+                "--normalization does not match config.json: "
+                f"{requested_normalization!r} != "
+                f"{saved_normalization_name!r}"
+            )
+        normalization = saved_normalization_name
         if (
             args.observation_mode is not None
             and args.observation_mode != observation_mode
@@ -269,6 +450,7 @@ def resolve_evaluation_context(args):
         )
         training_env_version = None
         evaluation_env_version = args.env_version
+        normalization = getattr(args, "normalization", None) or "none"
 
     if not model_path.is_file():
         raise FileNotFoundError(f"Model not found: {model_path}")
@@ -287,6 +469,7 @@ def resolve_evaluation_context(args):
         "history_length": history_length,
         "training_env_version": training_env_version,
         "evaluation_env_version": evaluation_env_version,
+        "normalization": normalization,
     }
 
 
@@ -313,6 +496,13 @@ def main():
         raise ValueError(
             "--video-episodes cannot exceed --episodes."
         )
+    if (
+        not np.isfinite(args.contact_force_threshold)
+        or args.contact_force_threshold <= 0
+    ):
+        raise ValueError(
+            "--contact-force-threshold must be finite and positive."
+        )
 
     evaluation_name = args.evaluation_name
     if (
@@ -329,6 +519,7 @@ def main():
     model_path = context["model_path"]
     observation_mode = context["observation_mode"]
     history_length = context["history_length"]
+    normalization = context["normalization"]
     evaluation_env_version = context["evaluation_env_version"]
     observation_spec = get_observation_mode_spec(
         observation_mode
@@ -339,10 +530,17 @@ def main():
     csv_path = evaluation_dir / f"{evaluation_name}_episodes.csv"
     summary_path = evaluation_dir / f"{evaluation_name}_summary.json"
     video_path = evaluation_dir / f"{evaluation_name}.mp4"
+    observation_stats_path = (
+        evaluation_dir
+        / f"{evaluation_name}_observation_stats.csv"
+    )
+    stratified_path = evaluation_dir / f"{evaluation_name}_stratified.csv"
 
-    protected_paths = [csv_path, summary_path]
+    protected_paths = [csv_path, summary_path, stratified_path]
     if args.video_episodes > 0:
         protected_paths.append(video_path)
+    if args.observation_stats:
+        protected_paths.append(observation_stats_path)
     existing_paths = [
         path for path in protected_paths if path.exists()
     ]
@@ -353,6 +551,7 @@ def main():
         )
 
     env = None
+    statistics_env = None
     frames = []
     results = []
     try:
@@ -372,8 +571,22 @@ def main():
                 observation_spec.contact_force_components
             ),
         )
+        history_input_env = raw_env
+        if args.observation_stats:
+            statistics_env = ObservationStatisticsWrapper(
+                raw_env,
+                channel_names=get_observation_channel_names(
+                    observation_mode
+                ),
+            )
+            history_input_env = statistics_env
+        normalized_env = apply_observation_normalization(
+            history_input_env,
+            normalization,
+            observation_mode,
+        )
         env = HistoryStackWrapper(
-            raw_env,
+            normalized_env,
             history_length=history_length,
         )
         model = PPO.load(str(model_path), env=env, device="cpu")
@@ -384,6 +597,8 @@ def main():
             info = reset_info
             episode_return = 0.0
             episode_length = 0
+            contact_force_xy_samples = []
+            contact_force_norm_samples = []
             record_video = episode_index < args.video_episodes
             if record_video:
                 frames.extend([env.render()] * 8)
@@ -398,6 +613,16 @@ def main():
                 )
                 episode_return += reward
                 episode_length += 1
+                force_xy = optional_float(
+                    info.get("contact_force_xy")
+                )
+                force_norm = optional_float(
+                    info.get("contact_force_norm")
+                )
+                if force_xy is not None and np.isfinite(force_xy):
+                    contact_force_xy_samples.append(force_xy)
+                if force_norm is not None and np.isfinite(force_norm):
+                    contact_force_norm_samples.append(force_norm)
                 if record_video:
                     frames.append(env.render())
                 if terminated or truncated:
@@ -455,12 +680,49 @@ def main():
                 "initial_plate_yaw_offset": optional_float(
                     reset_info.get("initial_plate_yaw_offset")
                 ),
+                "initial_goal_distance": optional_float(
+                    reset_info.get("goal_distance")
+                ),
                 "final_goal_distance": final_goal_distance,
                 "requested_friction": optional_float(
                     info.get("requested_friction")
                 ),
                 "contact_friction": optional_float(
                     info.get("contact_friction")
+                ),
+                "mean_contact_force_xy": mean_or_none(
+                    contact_force_xy_samples
+                ),
+                "p95_contact_force_xy": (
+                    float(np.percentile(contact_force_xy_samples, 95))
+                    if contact_force_xy_samples
+                    else None
+                ),
+                "peak_contact_force_xy": (
+                    max(contact_force_xy_samples)
+                    if contact_force_xy_samples
+                    else None
+                ),
+                "peak_contact_force_norm": (
+                    max(contact_force_norm_samples)
+                    if contact_force_norm_samples
+                    else None
+                ),
+                "contact_force_xy_impulse": (
+                    float(sum(contact_force_xy_samples) / 20.0)
+                    if contact_force_xy_samples
+                    else None
+                ),
+                "contact_force_sample_count": len(
+                    contact_force_xy_samples
+                ),
+                "contact_force_exceedance_count": sum(
+                    value > args.contact_force_threshold
+                    for value in contact_force_xy_samples
+                ),
+                "contact_force_threshold_exceeded": any(
+                    value > args.contact_force_threshold
+                    for value in contact_force_xy_samples
                 ),
             }
             results.append(result)
@@ -508,9 +770,18 @@ def main():
         "initial_plate_z",
         "initial_plate_yaw",
         "initial_plate_yaw_offset",
+        "initial_goal_distance",
         "final_goal_distance",
         "requested_friction",
         "contact_friction",
+        "mean_contact_force_xy",
+        "p95_contact_force_xy",
+        "peak_contact_force_xy",
+        "peak_contact_force_norm",
+        "contact_force_xy_impulse",
+        "contact_force_sample_count",
+        "contact_force_exceedance_count",
+        "contact_force_threshold_exceeded",
     ]
     with csv_path.open("w", newline="", encoding="utf-8") as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -552,6 +823,41 @@ def main():
             ).items()
         )
     )
+    overall_metrics = summarize_episode_rows(results)
+    stratified_metrics = build_stratified_metrics(results)
+    stratified_rows = []
+    for dimension, groups in stratified_metrics.items():
+        for group in groups:
+            stratified_rows.append({"dimension": dimension, **group})
+    with stratified_path.open("w", newline="", encoding="utf-8") as stream:
+        fieldnames = list(stratified_rows[0].keys())
+        writer = csv.DictWriter(stream, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(stratified_rows)
+    total_force_samples = sum(
+        row["contact_force_sample_count"] for row in results
+    )
+    total_force_exceedances = sum(
+        row["contact_force_exceedance_count"] for row in results
+    )
+
+    observation_statistics = None
+    if statistics_env is not None:
+        observation_statistics = statistics_env.summary()
+        stats_fieldnames = list(
+            observation_statistics["channels"][0].keys()
+        )
+        with observation_stats_path.open(
+            "w",
+            newline="",
+            encoding="utf-8",
+        ) as stats_file:
+            writer = csv.DictWriter(
+                stats_file,
+                fieldnames=stats_fieldnames,
+            )
+            writer.writeheader()
+            writer.writerows(observation_statistics["channels"])
 
     if frames:
         imageio.mimsave(video_path, frames, fps=20)
@@ -577,6 +883,7 @@ def main():
             "video_episodes": args.video_episodes,
             "evaluation_env_version": evaluation_env_version,
             "evaluation_env_id": ENV_IDS[evaluation_env_version],
+            "contact_force_threshold": args.contact_force_threshold,
         },
         "model": {
             "path": str(model_path),
@@ -613,6 +920,10 @@ def main():
             "contact_force_axes": list(
                 observation_spec.contact_force_axes
             ),
+            "normalization": normalization_metadata(
+                normalization,
+                observation_mode,
+            ),
         },
         "metrics": {
             "success_count": int(sum(successes)),
@@ -645,11 +956,61 @@ def main():
                 if initial_y
                 else None
             ),
+            "observation_statistics": observation_statistics,
+            "success_rate_ci95": overall_metrics[
+                "success_rate_ci95"
+            ],
+            "stratified": stratified_metrics,
+            "contact_force_safety": {
+                "description": (
+                    "Net world-frame force on the plate across all "
+                    "contacts; XY magnitude is a safety proxy, not an "
+                    "isolated robot-object contact force."
+                ),
+                "threshold": args.contact_force_threshold,
+                "control_frequency_hz": 20.0,
+                "sample_count": total_force_samples,
+                "mean_episode_peak_xy": overall_metrics[
+                    "mean_peak_contact_force_xy"
+                ],
+                "max_episode_peak_xy": overall_metrics[
+                    "max_peak_contact_force_xy"
+                ],
+                "mean_episode_impulse_xy": mean_or_none(
+                    [
+                        row["contact_force_xy_impulse"]
+                        for row in results
+                        if row["contact_force_xy_impulse"] is not None
+                    ]
+                ),
+                "episodes_exceeding_threshold": sum(
+                    row["contact_force_threshold_exceeded"]
+                    for row in results
+                ),
+                "episode_exceedance_rate": mean_or_none(
+                    [
+                        float(row["contact_force_threshold_exceeded"])
+                        for row in results
+                    ]
+                ),
+                "exceedance_step_count": total_force_exceedances,
+                "exceedance_step_rate": (
+                    total_force_exceedances / total_force_samples
+                    if total_force_samples
+                    else None
+                ),
+            },
         },
         "artifacts": {
             "episodes_csv": str(csv_path),
             "summary_json": str(summary_path),
+            "stratified_csv": str(stratified_path),
             "video": str(video_path) if frames else None,
+            "observation_statistics_csv": (
+                str(observation_stats_path)
+                if observation_statistics is not None
+                else None
+            ),
         },
     }
     write_json(summary_path, summary)
@@ -673,6 +1034,8 @@ def main():
     print(f"summary_json={summary_path}")
     if frames:
         print(f"video={video_path}")
+    if observation_statistics is not None:
+        print(f"observation_stats={observation_stats_path}")
 
 
 if __name__ == "__main__":

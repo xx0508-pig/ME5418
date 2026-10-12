@@ -63,6 +63,10 @@ def test_v1_environment_smoke():
         assert np.isfinite(reward)
         assert isinstance(terminated, bool)
         assert isinstance(truncated, bool)
+        assert np.isfinite(info["contact_force_xy"])
+        assert np.isfinite(info["contact_force_norm"])
+        assert info["contact_force_xy"] >= 0.0
+        assert info["contact_force_norm"] >= info["contact_force_xy"]
 
     finally:
         env.close()

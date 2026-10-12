@@ -17,10 +17,13 @@ from stable_baselines3.common.monitor import Monitor
 
 from envs import (
     ENV_IDS,
+    NORMALIZATION_CHOICES,
     OBSERVATION_MODES,
     HistoryStackWrapper,
+    apply_observation_normalization,
     get_observation_mode_spec,
     make_pushing_env,
+    normalization_metadata,
     stacked_observation_dimension,
 )
 
@@ -129,10 +132,25 @@ def parse_args():
             "Use 1 for memoryless PPO or 4 for the formal history ablation."
         ),
     )
+    parser.add_argument(
+        "--normalization",
+        choices=NORMALIZATION_CHOICES,
+        default=None,
+        help=(
+            "Base-observation normalization. Fresh training defaults to "
+            "fixed_v1; resumed legacy models default to none."
+        ),
+    )
     parser.add_argument("--resume", default=None, help="Existing .zip model to continue training.")
     parser.add_argument("--friction-min", type=float, default=None)
     parser.add_argument("--friction-max", type=float, default=None)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--device",
+        choices=["cpu", "auto"],
+        default="cpu",
+        help="SB3 compute device. CPU is recommended for this MLP policy.",
+    )
     parser.add_argument("--checkpoint-freq", type=int, default=50_000)
     parser.add_argument("--ent-coef", type=float, default=None,
                         help="Entropy coefficient. Fresh training defaults to 0.01; "
@@ -142,6 +160,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    normalization = args.normalization or (
+        "none" if args.resume else "fixed_v1"
+    )
 
     observation_spec = get_observation_mode_spec(
         args.observation_mode
@@ -243,6 +265,8 @@ def main():
                 "invalid_state",
                 "out_of_workspace",
                 "time_limit",
+                "contact_force_xy",
+                "contact_force_norm",
             ]
         )
 
@@ -265,6 +289,7 @@ def main():
         "training": {
             "requested_timesteps": args.timesteps,
             "seed": args.seed,
+            "device": args.device,
             "checkpoint_frequency": args.checkpoint_freq,
             "resume_from": (
                 str(Path(args.resume).resolve())
@@ -285,6 +310,10 @@ def main():
                 stacked_observation_dim
             ),
             "history_layout": history_layout,
+            "normalization": normalization_metadata(
+                normalization,
+                args.observation_mode,
+            ),
             "include_object_velocity": (
                 observation_spec.include_object_velocity
             ),
@@ -345,8 +374,13 @@ def main():
             ),
         )
 
-        history_env = HistoryStackWrapper(
+        normalized_env = apply_observation_normalization(
             raw_env,
+            normalization,
+            args.observation_mode,
+        )
+        history_env = HistoryStackWrapper(
+            normalized_env,
             history_length=args.history_length,
         )
         env = Monitor(
@@ -397,6 +431,7 @@ def main():
                 env=env,
                 tensorboard_log=str(tensorboard_dir),
                 seed=args.seed,
+                device=args.device,
             )
 
             if args.ent_coef is not None:
@@ -428,6 +463,7 @@ def main():
                 verbose=1,
                 tensorboard_log=str(tensorboard_dir),
                 seed=args.seed,
+                device=args.device,
             )
             reset_num_timesteps = True
 
