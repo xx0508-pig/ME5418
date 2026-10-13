@@ -30,6 +30,8 @@ def test_ablation_suite_defaults_to_requested_overnight_matrix(
 
     assert args.episodes == 500
     assert args.seed == 4000
+    assert args.run_set == "normalized"
+    assert args.contact_force_threshold == 0.20
     assert len(conditions) == 3
     assert [item["friction_range"] for item in conditions] == [
         [0.3, 0.9],
@@ -37,6 +39,10 @@ def test_ablation_suite_defaults_to_requested_overnight_matrix(
         [1.0, 1.0],
     ]
     assert len(evaluate_ablation_suite.RUNS) * len(conditions) == 15
+    assert all(
+        "formal_norm_" in run_name
+        for _, run_name in evaluate_ablation_suite.RUNS
+    )
 
 
 def test_k4_checkpoint_screen_defaults_to_paired_high_friction(

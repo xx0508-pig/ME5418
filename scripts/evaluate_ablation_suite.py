@@ -11,13 +11,35 @@ import sys
 from pathlib import Path
 
 
-RUNS = (
+LEGACY_RUNS = (
     ("pos6_k1", "formal_pos6_k1_seed42"),
     ("posvel9_k1", "formal_posvel9_k1_seed42"),
     ("posvel_force11_k1", "formal_posvel_force11_k1_seed42"),
     ("posvel9_k4", "formal_posvel9_k4_seed42"),
     ("posvel_force11_k4", "formal_posvel_force11_k4_seed42"),
 )
+
+NORMALIZED_RUNS = (
+    ("pos6_k1", "formal_norm_pos6_k1_seed42"),
+    ("posvel9_k1", "formal_norm_posvel9_k1_seed42"),
+    (
+        "posvel_force11_k1",
+        "formal_norm_posvel_force11_k1_seed42",
+    ),
+    ("posvel9_k4", "formal_norm_posvel9_k4_seed42"),
+    (
+        "posvel_force11_k4",
+        "formal_norm_posvel_force11_k4_seed42",
+    ),
+)
+
+RUN_SETS = {
+    "normalized": NORMALIZED_RUNS,
+    "legacy": LEGACY_RUNS,
+}
+
+# Default public constant retained for callers and tests.
+RUNS = NORMALIZED_RUNS
 
 
 def parse_args():
@@ -26,6 +48,15 @@ def parse_args():
             "Evaluate all five seed-42 ablation models with identical "
             "episode seeds and friction settings."
         )
+    )
+    parser.add_argument(
+        "--run-set",
+        choices=sorted(RUN_SETS),
+        default="normalized",
+        help=(
+            "Model family to evaluate. The default is the new fixed_v1 "
+            "normalization suite; use legacy for the original models."
+        ),
     )
     parser.add_argument(
         "--episodes",
@@ -70,6 +101,17 @@ def parse_args():
         help="Videos per model. Keep this at 0 for long evaluations.",
     )
     parser.add_argument(
+        "--contact-force-threshold",
+        type=float,
+        default=0.20,
+        help="Safety threshold forwarded to every model evaluation.",
+    )
+    parser.add_argument(
+        "--observation-stats",
+        action="store_true",
+        help="Also save raw per-channel observation statistics.",
+    )
+    parser.add_argument(
         "--suite-name",
         "--evaluation-name",
         dest="suite_name",
@@ -91,7 +133,7 @@ def number_slug(value):
 def generated_suite_name(args):
     final_seed = args.seed + args.episodes - 1
     return (
-        f"dev_ablation_n{args.episodes}_"
+        f"{args.run_set}_ablation_n{args.episodes}_"
         f"seeds_{args.seed}_{final_seed}"
     )
 
@@ -146,6 +188,13 @@ def validate_args(args):
         raise ValueError("--video-episodes cannot be negative.")
     if args.video_episodes > args.episodes:
         raise ValueError("--video-episodes cannot exceed --episodes.")
+    if (
+        not math.isfinite(args.contact_force_threshold)
+        or args.contact_force_threshold <= 0
+    ):
+        raise ValueError(
+            "--contact-force-threshold must be finite and positive."
+        )
     if not math.isfinite(args.friction_min) or not math.isfinite(
         args.friction_max
     ):
@@ -183,12 +232,18 @@ def wilson_interval(success_count, episodes, z=1.959963984540054):
 def completed_evaluation_is_compatible(
     summary_path,
     csv_path,
+    stratified_path,
+    observation_stats_path,
     args,
     expected_friction_range,
 ):
-    if not summary_path.exists() and not csv_path.exists():
+    required_paths = [summary_path, csv_path, stratified_path]
+    if args.observation_stats:
+        required_paths.append(observation_stats_path)
+    existing = [path.exists() for path in required_paths]
+    if not any(existing):
         return False
-    if not summary_path.exists() or not csv_path.exists():
+    if not all(existing):
         raise RuntimeError(
             "Incomplete existing evaluation artifacts: "
             f"{summary_path.parent}. Rename or remove the incomplete "
@@ -203,6 +258,8 @@ def completed_evaluation_is_compatible(
         and evaluation["requested_friction_range"]
         == expected_friction_range
         and evaluation["video_episodes"] == args.video_episodes
+        and evaluation.get("contact_force_threshold")
+        == args.contact_force_threshold
     )
     if not compatible:
         raise RuntimeError(
@@ -233,16 +290,27 @@ def evaluation_command(
         str(args.video_episodes),
         "--seed",
         str(args.seed),
+        "--contact-force-threshold",
+        str(args.contact_force_threshold),
     ]
+    if args.observation_stats:
+        command.append("--observation-stats")
     command.extend(friction_arguments)
     return command
 
 
-def write_aggregate(repo_root, suite_dir, suite_name, conditions):
+def write_aggregate(
+    repo_root,
+    suite_dir,
+    suite_name,
+    conditions,
+    runs,
+    run_set,
+):
     rows = []
     for condition in conditions:
         evaluation_name = condition["evaluation_name"]
-        for label, run_name in RUNS:
+        for label, run_name in runs:
             summary_path = (
                 repo_root
                 / "outputs"
@@ -323,6 +391,7 @@ def write_aggregate(repo_root, suite_dir, suite_name, conditions):
         json.dumps(
             {
                 "suite_name": suite_name,
+                "run_set": run_set,
                 "conditions": [
                     {
                         "label": condition["label"],
@@ -370,6 +439,7 @@ def main():
     repo_root = Path(__file__).resolve().parents[1]
     suite_name = args.suite_name or generated_suite_name(args)
     conditions = build_conditions(args, suite_name)
+    runs = RUN_SETS[args.run_set]
     suite_dir = (
         repo_root / "outputs" / "evaluation_suites" / suite_name
     )
@@ -383,11 +453,12 @@ def main():
         "/tmp/matplotlib-contact-pushing",
     )
 
-    total_jobs = len(RUNS) * len(conditions)
+    total_jobs = len(runs) * len(conditions)
     total_episodes = total_jobs * args.episodes
     print(f"Suite name: {suite_name}", flush=True)
     print(
-        f"Models: {len(RUNS)}, conditions: {len(conditions)}, "
+        f"Run set: {args.run_set}; models: {len(runs)}, "
+        f"conditions: {len(conditions)}, "
         f"episodes/model/condition: {args.episodes}, "
         f"total episodes: {total_episodes}",
         flush=True,
@@ -395,7 +466,7 @@ def main():
 
     job_index = 0
     for condition in conditions:
-        for label, run_name in RUNS:
+        for label, run_name in runs:
             job_index += 1
             run_directory = repo_root / "outputs" / "runs" / run_name
             if not (run_directory / "final_model.zip").is_file():
@@ -410,6 +481,13 @@ def main():
             )
             csv_path = (
                 evaluation_dir / f"{evaluation_name}_episodes.csv"
+            )
+            stratified_path = (
+                evaluation_dir / f"{evaluation_name}_stratified.csv"
+            )
+            observation_stats_path = (
+                evaluation_dir
+                / f"{evaluation_name}_observation_stats.csv"
             )
             command = evaluation_command(
                 repo_root,
@@ -430,6 +508,8 @@ def main():
             if completed_evaluation_is_compatible(
                 summary_path,
                 csv_path,
+                stratified_path,
+                observation_stats_path,
                 args,
                 condition["friction_range"],
             ):
@@ -452,6 +532,8 @@ def main():
         suite_dir,
         suite_name,
         conditions,
+        runs,
+        args.run_set,
     )
     print("\nAblation evaluation suite complete.")
     print(f"Aggregate CSV: {csv_path}")
