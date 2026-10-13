@@ -7,6 +7,7 @@ import pytest
 from scripts import (
     evaluate_ablation_suite,
     evaluate_feedback_baseline,
+    evaluate_formal_multiseed_suite,
     evaluate_ppo,
     screen_k4_checkpoints,
     train_normalized_ablation_suite,
@@ -98,10 +99,97 @@ def test_normalized_training_suite_defaults(monkeypatch):
     assert args.timesteps == 500_000
     assert args.seed == 42
     assert args.device == "cpu"
+    assert train_normalized_ablation_suite.resolved_suite_name(args) == (
+        "formal_normalized_v1_500000_seed42"
+    )
     assert len(jobs) == 5
     assert all(job["normalization"] == "fixed_v1" for job in jobs)
     assert all(job["network"]["actor"] == [128, 128] for job in jobs)
     assert [job["history_length"] for job in jobs] == [1, 1, 1, 4, 4]
+
+
+def test_normalized_training_suite_name_tracks_seed(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["train_normalized_ablation_suite.py", "--seed", "43"],
+    )
+    args = train_normalized_ablation_suite.parse_args()
+
+    assert train_normalized_ablation_suite.resolved_suite_name(args) == (
+        "formal_normalized_v1_500000_seed43"
+    )
+
+
+def test_formal_multiseed_evaluation_defaults(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["evaluate_formal_multiseed_suite.py"],
+    )
+    args = evaluate_formal_multiseed_suite.parse_args()
+    evaluate_formal_multiseed_suite.validate_args(args)
+    suite_name = evaluate_formal_multiseed_suite.generated_suite_name(args)
+    conditions = evaluate_formal_multiseed_suite.build_conditions(args)
+    jobs = evaluate_formal_multiseed_suite.build_jobs(args, suite_name)
+
+    assert args.episodes == 200
+    assert args.episode_seed == 10_000
+    assert (
+        evaluate_formal_multiseed_suite.resolved_training_seeds(args)
+        == (42, 43, 44)
+    )
+    assert [condition["friction_range"] for condition in conditions] == [
+        [0.3, 0.9],
+        [0.3, 0.3],
+        [0.6, 0.6],
+        [0.9, 0.9],
+        [1.0, 1.0],
+    ]
+    assert len(jobs) == 75
+    assert len(jobs) * args.episodes == 15_000
+
+
+def test_formal_multiseed_aggregation_uses_training_seed_units(tmp_path):
+    rows = []
+    for training_seed, success_rate in ((42, 0.5), (43, 0.7), (44, 0.9)):
+        rows.append(
+            {
+                "condition": "fixed_mu_0p9",
+                "condition_kind": "fixed",
+                "fixed_friction": 0.9,
+                "training_seed": training_seed,
+                "model": "pos6_k1",
+                "episodes": 200,
+                "success_count": int(success_rate * 200),
+                "success_rate": success_rate,
+                "mean_episode_length": 100.0,
+                "mean_return": 10.0,
+                "mean_final_goal_distance": 0.05,
+                "mean_episode_peak_contact_force_xy": 0.1,
+                "contact_force_episode_exceedance_rate": 0.2,
+                "contact_force_step_exceedance_rate": 0.01,
+            }
+        )
+
+    aggregate = evaluate_formal_multiseed_suite.aggregate_rows(rows)[0]
+
+    assert aggregate["training_seed_count"] == 3
+    assert aggregate["total_episodes"] == 600
+    assert aggregate["pooled_success_rate"] == pytest.approx(0.7)
+    assert aggregate[
+        "success_rate_mean_across_training_seeds"
+    ] == pytest.approx(0.7)
+    assert aggregate[
+        "success_rate_std_across_training_seeds"
+    ] == pytest.approx(0.2)
+
+    curve_path = tmp_path / "friction_curve.png"
+    evaluate_formal_multiseed_suite.write_friction_curve(
+        curve_path,
+        [aggregate],
+    )
+    assert curve_path.stat().st_size > 0
 
 
 def test_train_defaults_to_v0(monkeypatch):

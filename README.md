@@ -58,6 +58,45 @@ v1 在每次 reset 时随机化盘子的初始 XY 位置、yaw 和真实接触�
 生成的实验目录默认不提交到 GitHub，以免仓库膨胀；每位协作者只需共享配置、
 汇总 CSV/JSON 和必要的最终模型。
 
+### 正式多 seed 训练与测试
+
+组员更新到同一版代码并通过 pytest 后，可以分别训练 seed 43 和 44：
+
+```bash
+MUJOCO_GL=egl python -m scripts.train_normalized_ablation_suite --seed 43
+MUJOCO_GL=egl python -m scripts.train_normalized_ablation_suite --seed 44
+```
+
+每条命令会顺序训练五种 observation/history 配置，默认每个模型 500k 步。正式
+测试应在收齐 seed 42、43、44 的全部模型后，在同一台机器运行：
+
+```bash
+MUJOCO_GL=egl python -m scripts.evaluate_formal_multiseed_suite
+```
+
+默认协议对每个模型、每个训练 seed、每个条件评估 200 回合，环境 seeds 固定为
+10000--10199。条件包括随机摩擦 `0.3--0.9`，以及固定摩擦 `0.3`、`0.6`、
+`0.9`、未见摩擦 `1.0`；固定点同时构成摩擦性能曲线。总计 75 个评估任务、
+15000 回合。脚本支持中断后续跑，并输出逐训练 seed CSV、跨训练 seed 聚合 CSV
+和 JSON 总结，同时自动生成固定摩擦成功率曲线（均值及 seed 间标准差）。可用
+`--dry-run` 先检查完整任务矩阵。
+
+如果三位成员在不同机器上评估，可以分别限制训练 seed，例如：
+
+```bash
+MUJOCO_GL=egl python -m scripts.evaluate_formal_multiseed_suite \
+  --training-seed 43 \
+  --suite-name formal_multiseed_n200_envseeds_10000_10199
+```
+
+但论文中的最终表格和曲线仍应在收齐三个 seeds 后统一聚合，不能把单个 seed 的
+结果称为最终结论。
+
+`outputs/` 下的模型和大体积实验结果被 Git 忽略，因此推送 GitHub 只会共享代码，
+不会共享训练模型。组员训练完成后应把对应的
+`outputs/runs/formal_norm_*_seed43/44/` 目录通过共享硬盘、云盘或 `scp` 交回；
+最终汇总机器必须同时拥有三个训练 seeds 的 run directories。
+
 ### 3. 项目结构
 
 ```text

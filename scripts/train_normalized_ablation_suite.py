@@ -43,7 +43,11 @@ def parse_args():
     parser.add_argument("--device", choices=["cpu", "auto"], default="cpu")
     parser.add_argument(
         "--suite-name",
-        default="formal_normalized_v1_500k_seed42",
+        default=None,
+        help=(
+            "Training-suite directory name. When omitted, it is generated "
+            "from timesteps and seed."
+        ),
     )
     parser.add_argument(
         "--run-prefix",
@@ -72,8 +76,16 @@ def validate_args(args):
         (args.suite_name, "--suite-name"),
         (args.run_prefix, "--run-prefix"),
     ):
+        if value is None:
+            continue
         if not value or value in {".", ".."} or Path(value).name != value:
             raise ValueError(f"{name} must be one directory-safe name.")
+
+
+def resolved_suite_name(args):
+    if args.suite_name:
+        return args.suite_name
+    return f"formal_normalized_v1_{args.timesteps}_seed{args.seed}"
 
 
 def git_status():
@@ -192,6 +204,7 @@ def write_manifest(path, manifest):
 def main():
     args = parse_args()
     validate_args(args)
+    suite_name = resolved_suite_name(args)
     dirty = git_status()
     if dirty and not args.allow_dirty and not args.dry_run:
         raise RuntimeError(
@@ -200,7 +213,7 @@ def main():
             + dirty
         )
 
-    suite_dir = PROJECT_ROOT / "outputs" / "training_suites" / args.suite_name
+    suite_dir = PROJECT_ROOT / "outputs" / "training_suites" / suite_name
     suite_dir.mkdir(parents=True, exist_ok=True)
     lock_stream = (suite_dir / "suite.lock").open("w", encoding="utf-8")
     try:
@@ -218,7 +231,7 @@ def main():
     manifest_path = suite_dir / "manifest.json"
     manifest = {
         "schema_version": 1,
-        "suite_name": args.suite_name,
+        "suite_name": suite_name,
         "created_at": current_time(),
         "status": "dry_run" if args.dry_run else "running",
         "sequential": True,
