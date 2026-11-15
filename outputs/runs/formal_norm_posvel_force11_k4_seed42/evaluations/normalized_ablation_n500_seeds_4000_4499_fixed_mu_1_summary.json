@@ -1,0 +1,500 @@
+{
+  "artifacts": {
+    "episodes_csv": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42/evaluations/normalized_ablation_n500_seeds_4000_4499_fixed_mu_1_episodes.csv",
+    "observation_statistics_csv": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42/evaluations/normalized_ablation_n500_seeds_4000_4499_fixed_mu_1_observation_stats.csv",
+    "stratified_csv": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42/evaluations/normalized_ablation_n500_seeds_4000_4499_fixed_mu_1_stratified.csv",
+    "summary_json": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42/evaluations/normalized_ablation_n500_seeds_4000_4499_fixed_mu_1_summary.json",
+    "video": null
+  },
+  "command": {
+    "argv": [
+      "/home/deng-xuan/robotics/contact_aware_pushing/scripts/evaluate_ppo.py",
+      "--run-dir",
+      "outputs/runs/formal_norm_posvel_force11_k4_seed42",
+      "--evaluation-name",
+      "normalized_ablation_n500_seeds_4000_4499_fixed_mu_1",
+      "--episodes",
+      "500",
+      "--video-episodes",
+      "0",
+      "--seed",
+      "4000",
+      "--contact-force-threshold",
+      "0.2",
+      "--observation-stats",
+      "--friction",
+      "1.0"
+    ],
+    "working_directory": "/home/deng-xuan/robotics/contact_aware_pushing"
+  },
+  "created_at": "2026-10-13T15:53:57+08:00",
+  "evaluation": {
+    "base_seed": 4000,
+    "contact_force_threshold": 0.2,
+    "deterministic": true,
+    "episodes": 500,
+    "evaluation_env_id": "ContactAwarePushing-LIBERO-v1",
+    "evaluation_env_version": "v1",
+    "name": "normalized_ablation_n500_seeds_4000_4499_fixed_mu_1",
+    "requested_friction_range": [
+      1.0,
+      1.0
+    ],
+    "video_episodes": 0
+  },
+  "metrics": {
+    "contact_force_safety": {
+      "control_frequency_hz": 20.0,
+      "description": "Net world-frame force on the plate across all contacts; XY magnitude is a safety proxy, not an isolated robot-object contact force.",
+      "episode_exceedance_rate": 0.242,
+      "episodes_exceeding_threshold": 121,
+      "exceedance_step_count": 137,
+      "exceedance_step_rate": 0.002098041317631204,
+      "max_episode_peak_xy": 0.8687107202678507,
+      "mean_episode_impulse_xy": 0.04314985822779448,
+      "mean_episode_peak_xy": 0.16179063585741313,
+      "sample_count": 65299,
+      "threshold": 0.2
+    },
+    "initial_plate_x_range": [
+      0.00546330725774169,
+      0.0950058102607727
+    ],
+    "initial_plate_y_range": [
+      -0.054891202598810196,
+      0.05493410304188728
+    ],
+    "mean_contact_friction": 1.0,
+    "mean_episode_length": 130.598,
+    "mean_final_goal_distance": 0.03920180783967953,
+    "mean_return": 19.32692998539796,
+    "observation_statistics": {
+      "channels": [
+        {
+          "abs_max": 0.3034704923629761,
+          "channel": "plate_minus_eef_x",
+          "finite_count": 65799,
+          "index": 0,
+          "max": 0.3034704923629761,
+          "mean": 0.10885226666863114,
+          "min": -0.03495677560567856,
+          "non_finite_count": 0,
+          "p01": -0.00695088654756546,
+          "p50": 0.08821924030780792,
+          "p99": 0.2754202044010162,
+          "sample_count": 65799,
+          "std": 0.0761644160913812
+        },
+        {
+          "abs_max": 0.27959513664245605,
+          "channel": "plate_minus_eef_y",
+          "finite_count": 65799,
+          "index": 1,
+          "max": 0.13304923474788666,
+          "mean": -0.025857961654612655,
+          "min": -0.27959513664245605,
+          "non_finite_count": 0,
+          "p01": -0.20705337524414064,
+          "p50": 0.014303445816040039,
+          "p99": 0.11897510409355161,
+          "sample_count": 65799,
+          "std": 0.09942901896124977
+        },
+        {
+          "abs_max": 0.2717684507369995,
+          "channel": "plate_minus_eef_z",
+          "finite_count": 65799,
+          "index": 2,
+          "max": 0.019993305206298828,
+          "mean": -0.04909944038071961,
+          "min": -0.2717684507369995,
+          "non_finite_count": 0,
+          "p01": -0.2684793674945831,
+          "p50": -0.011679589748382568,
+          "p99": 0.006618621349334707,
+          "sample_count": 65799,
+          "std": 0.0745220057853891
+        },
+        {
+          "abs_max": 0.1409839391708374,
+          "channel": "goal_minus_plate_x",
+          "finite_count": 65799,
+          "index": 3,
+          "max": 0.01781560480594635,
+          "mean": -0.07246835726520098,
+          "min": -0.1409839391708374,
+          "non_finite_count": 0,
+          "p01": -0.13406893610954285,
+          "p50": -0.078235924243927,
+          "p99": 0.010235383361577944,
+          "sample_count": 65799,
+          "std": 0.040824079880507846
+        },
+        {
+          "abs_max": 0.274891197681427,
+          "channel": "goal_minus_plate_y",
+          "finite_count": 65799,
+          "index": 4,
+          "max": 0.274891197681427,
+          "mean": 0.1533053974301272,
+          "min": -0.016939133405685425,
+          "non_finite_count": 0,
+          "p01": -0.000928000211715698,
+          "p50": 0.1651078760623932,
+          "p99": 0.27181074023246765,
+          "sample_count": 65799,
+          "std": 0.07149699661696118
+        },
+        {
+          "abs_max": 0.04258120059967041,
+          "channel": "goal_minus_plate_z",
+          "finite_count": 65799,
+          "index": 5,
+          "max": -0.0018818378448486328,
+          "mean": -0.009868507876302187,
+          "min": -0.04258120059967041,
+          "non_finite_count": 0,
+          "p01": -0.026644740104675293,
+          "p50": -0.007464051246643066,
+          "p99": -0.006136237382888803,
+          "sample_count": 65799,
+          "std": 0.005111964536852092
+        },
+        {
+          "abs_max": 0.16314300894737244,
+          "channel": "plate_velocity_x",
+          "finite_count": 65799,
+          "index": 6,
+          "max": 0.16314300894737244,
+          "mean": -0.01167461266370044,
+          "min": -0.13760966062545776,
+          "non_finite_count": 0,
+          "p01": -0.10136425763368606,
+          "p50": -6.8872914821640266e-18,
+          "p99": 0.0552166645228862,
+          "sample_count": 65799,
+          "std": 0.029072615027859374
+        },
+        {
+          "abs_max": 0.2569737732410431,
+          "channel": "plate_velocity_y",
+          "finite_count": 65799,
+          "index": 7,
+          "max": 0.2569737732410431,
+          "mean": 0.028046157495235632,
+          "min": -0.16974866390228271,
+          "non_finite_count": 0,
+          "p01": -0.01347885563969612,
+          "p50": 2.6310257820566034e-17,
+          "p99": 0.12031968623399729,
+          "sample_count": 65799,
+          "std": 0.04523558801947658
+        },
+        {
+          "abs_max": 0.4785192906856537,
+          "channel": "plate_velocity_z",
+          "finite_count": 65799,
+          "index": 8,
+          "max": 0.4785192906856537,
+          "mean": -0.0005437797436654549,
+          "min": -0.2971290946006775,
+          "non_finite_count": 0,
+          "p01": -0.11588421776890755,
+          "p50": 1.579289203210675e-14,
+          "p99": 0.0975620037317274,
+          "sample_count": 65799,
+          "std": 0.03314683095862898
+        },
+        {
+          "abs_max": 0.6002792119979858,
+          "channel": "contact_force_x",
+          "finite_count": 65799,
+          "index": 9,
+          "max": 0.6002792119979858,
+          "mean": -0.0005361503552372308,
+          "min": -0.37253352999687195,
+          "non_finite_count": 0,
+          "p01": -0.037301373705267905,
+          "p50": -9.427729820207804e-18,
+          "p99": 0.026043908037245083,
+          "sample_count": 65799,
+          "std": 0.014127996594457496
+        },
+        {
+          "abs_max": 0.8574017882347107,
+          "channel": "contact_force_y",
+          "finite_count": 65799,
+          "index": 10,
+          "max": 0.8574017882347107,
+          "mean": 0.001262313803952308,
+          "min": -0.841934323310852,
+          "non_finite_count": 0,
+          "p01": -0.041032453849911686,
+          "p50": 9.886724070307354e-18,
+          "p99": 0.0529676676541566,
+          "sample_count": 65799,
+          "std": 0.0176687629221547
+        }
+      ],
+      "observation_dimension": 11,
+      "sample_count": 65799
+    },
+    "stable_success_count": 408,
+    "stable_success_rate": 0.816,
+    "std_episode_length": 81.08082631547362,
+    "std_final_goal_distance": 0.06335887093266293,
+    "std_return": 7.552207422204204,
+    "stratified": {
+      "absolute_initial_yaw_offset": [
+        {
+          "contact_force_exceedance_step_rate": 0.0017478531803328521,
+          "episode_count": 165,
+          "label": "small",
+          "lower_inclusive": null,
+          "max_peak_contact_force_xy": 0.798499395372925,
+          "mean_episode_length": 159.5030303030303,
+          "mean_final_goal_distance": 0.06178113617017075,
+          "mean_peak_contact_force_xy": 0.15707680073646055,
+          "mean_return": 16.59851804761218,
+          "success_count": 111,
+          "success_rate": 0.6727272727272727,
+          "success_rate_ci95": [
+            0.5979128801608259,
+            0.7396819285912871
+          ],
+          "upper_exclusive": 0.16666666666666666
+        },
+        {
+          "contact_force_exceedance_step_rate": 0.0022737998198120897,
+          "episode_count": 188,
+          "label": "medium",
+          "lower_inclusive": 0.16666666666666666,
+          "max_peak_contact_force_xy": 0.8687107202678507,
+          "mean_episode_length": 123.98404255319149,
+          "mean_final_goal_distance": 0.032943143297551554,
+          "mean_peak_contact_force_xy": 0.16987234163853412,
+          "mean_return": 19.944820859175362,
+          "success_count": 160,
+          "success_rate": 0.851063829787234,
+          "success_rate_ci95": [
+            0.7931660161505234,
+            0.8949021460259052
+          ],
+          "upper_exclusive": 0.3333333333333333
+        },
+        {
+          "contact_force_exceedance_step_rate": 0.0024247064828994383,
+          "episode_count": 147,
+          "label": "large",
+          "lower_inclusive": 0.3333333333333333,
+          "max_peak_contact_force_xy": 0.8574134605693855,
+          "mean_episode_length": 106.61224489795919,
+          "mean_final_goal_distance": 0.021861942257291832,
+          "mean_peak_contact_force_xy": 0.15674588829351135,
+          "mean_return": 21.599205396721093,
+          "success_count": 137,
+          "success_rate": 0.9319727891156463,
+          "success_rate_ci95": [
+            0.8793111625904273,
+            0.9626324316502348
+          ],
+          "upper_exclusive": null
+        }
+      ],
+      "contact_friction": [
+        {
+          "contact_force_exceedance_step_rate": null,
+          "episode_count": 0,
+          "label": "low",
+          "lower_inclusive": null,
+          "max_peak_contact_force_xy": null,
+          "mean_episode_length": null,
+          "mean_final_goal_distance": null,
+          "mean_peak_contact_force_xy": null,
+          "mean_return": null,
+          "success_count": 0,
+          "success_rate": null,
+          "success_rate_ci95": [
+            null,
+            null
+          ],
+          "upper_exclusive": 0.5
+        },
+        {
+          "contact_force_exceedance_step_rate": null,
+          "episode_count": 0,
+          "label": "medium",
+          "lower_inclusive": 0.5,
+          "max_peak_contact_force_xy": null,
+          "mean_episode_length": null,
+          "mean_final_goal_distance": null,
+          "mean_peak_contact_force_xy": null,
+          "mean_return": null,
+          "success_count": 0,
+          "success_rate": null,
+          "success_rate_ci95": [
+            null,
+            null
+          ],
+          "upper_exclusive": 0.7
+        },
+        {
+          "contact_force_exceedance_step_rate": 0.002098041317631204,
+          "episode_count": 500,
+          "label": "high",
+          "lower_inclusive": 0.7,
+          "max_peak_contact_force_xy": 0.8687107202678507,
+          "mean_episode_length": 130.598,
+          "mean_final_goal_distance": 0.03920180783967953,
+          "mean_peak_contact_force_xy": 0.16179063585741313,
+          "mean_return": 19.32692998539796,
+          "success_count": 408,
+          "success_rate": 0.816,
+          "success_rate_ci95": [
+            0.7796708962064596,
+            0.8475105206218394
+          ],
+          "upper_exclusive": null
+        }
+      ],
+      "initial_goal_distance": [
+        {
+          "contact_force_exceedance_step_rate": 0.0031201248049922,
+          "episode_count": 60,
+          "label": "near",
+          "lower_inclusive": null,
+          "max_peak_contact_force_xy": 0.6087422633417261,
+          "mean_episode_length": 85.46666666666667,
+          "mean_final_goal_distance": 0.010915192835576211,
+          "mean_peak_contact_force_xy": 0.1639272440704999,
+          "mean_return": 20.092031637857648,
+          "success_count": 59,
+          "success_rate": 0.9833333333333333,
+          "success_rate_ci95": [
+            0.9114487027240993,
+            0.9970518402052136
+          ],
+          "upper_exclusive": 0.2
+        },
+        {
+          "contact_force_exceedance_step_rate": 0.0017239855008398903,
+          "episode_count": 174,
+          "label": "medium",
+          "lower_inclusive": 0.2,
+          "max_peak_contact_force_xy": 0.8574134605693855,
+          "mean_episode_length": 130.01149425287358,
+          "mean_final_goal_distance": 0.03910307361993232,
+          "mean_peak_contact_force_xy": 0.15223241152362507,
+          "mean_return": 18.13539092556987,
+          "success_count": 139,
+          "success_rate": 0.7988505747126436,
+          "success_rate_ci95": [
+            0.7331279496636152,
+            0.8516625749398541
+          ],
+          "upper_exclusive": 0.24
+        },
+        {
+          "contact_force_exceedance_step_rate": 0.0021838131508162668,
+          "episode_count": 266,
+          "label": "far",
+          "lower_inclusive": 0.24,
+          "max_peak_contact_force_xy": 0.8687107202678507,
+          "mean_episode_length": 141.16165413533835,
+          "mean_final_goal_distance": 0.045646832856529956,
+          "mean_peak_contact_force_xy": 0.16756106646378122,
+          "mean_return": 19.933778471347228,
+          "success_count": 210,
+          "success_rate": 0.7894736842105263,
+          "success_rate_ci95": [
+            0.7365360047156368,
+            0.834169477951987
+          ],
+          "upper_exclusive": null
+        }
+      ]
+    },
+    "success_count": 408,
+    "success_rate": 0.816,
+    "success_rate_ci95": [
+      0.7796708962064596,
+      0.8475105206218394
+    ],
+    "termination_counts": {
+      "stable_success": 408,
+      "time_limit": 92
+    }
+  },
+  "model": {
+    "base_observation_dimension": 11,
+    "contact_force_axes": [
+      "x",
+      "y"
+    ],
+    "history_length": 4,
+    "normalization": {
+      "channels": {
+        "contact_force_x": {
+          "center": 0.0,
+          "scale": 0.1
+        },
+        "contact_force_y": {
+          "center": 0.0,
+          "scale": 0.1
+        },
+        "goal_minus_plate_x": {
+          "center": 0.0,
+          "scale": 0.30000001
+        },
+        "goal_minus_plate_y": {
+          "center": 0.0,
+          "scale": 0.30000001
+        },
+        "goal_minus_plate_z": {
+          "center": 0.0,
+          "scale": 0.30000001
+        },
+        "plate_minus_eef_x": {
+          "center": 0.0,
+          "scale": 0.30000001
+        },
+        "plate_minus_eef_y": {
+          "center": 0.0,
+          "scale": 0.30000001
+        },
+        "plate_minus_eef_z": {
+          "center": 0.0,
+          "scale": 0.30000001
+        },
+        "plate_velocity_x": {
+          "center": 0.0,
+          "scale": 0.2
+        },
+        "plate_velocity_y": {
+          "center": 0.0,
+          "scale": 0.2
+        },
+        "plate_velocity_z": {
+          "center": 0.0,
+          "scale": 0.2
+        }
+      },
+      "clip": 5.0,
+      "enabled": true,
+      "method": "divide_by_fixed_scale_then_clip",
+      "name": "fixed_v1",
+      "preserves_zero": true
+    },
+    "observation_mode": "posvel_force11",
+    "path": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42/final_model.zip",
+    "run_directory": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42",
+    "stacked_observation_dimension": 53,
+    "training_config_path": "/home/deng-xuan/robotics/contact_aware_pushing/outputs/runs/formal_norm_posvel_force11_k4_seed42/config.json",
+    "training_env_version": "v1",
+    "training_git": {
+      "dirty": false,
+      "sha": "411919eb9ac5e1fbe4483c3a9c2e242b8fd0d5cc"
+    }
+  },
+  "schema_version": 2
+}
