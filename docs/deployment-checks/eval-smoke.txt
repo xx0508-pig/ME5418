@@ -1,0 +1,17 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+episode=01 seed=2000 success=False reason=time_limit return=-0.906 steps=300 final_goal=0.3130 friction=0.6450817913145819
+episode=02 seed=2001 success=False reason=time_limit return=-1.646 steps=300 final_goal=0.2527 friction=0.5542018814972145
+
+Evaluation summary
+success_rate=0.000 (0/2)
+mean_return=-1.276
+mean_episode_length=300.0
+mean_final_goal_distance=0.2829
+termination_counts={'time_limit': 2}
+episodes_csv=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/runs/local_setup_smoke_20261001/evaluations/local_check_episodes.csv
+summary_json=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/runs/local_setup_smoke_20261001/evaluations/local_check_summary.json
+video=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/runs/local_setup_smoke_20261001/evaluations/local_check.mp4

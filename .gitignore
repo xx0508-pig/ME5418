@@ -10,6 +10,7 @@ htmlcov/
 .vscode/
 .venv/
 venv/
+.local/
 
 # OS-generated files
 .DS_Store

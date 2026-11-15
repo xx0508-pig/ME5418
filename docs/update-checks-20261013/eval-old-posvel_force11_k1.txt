@@ -1,0 +1,15 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+episode=01 seed=2000 success=True reason=stable_success return=+24.186 steps=86 final_goal=0.0087 friction=0.6450817913145819
+
+Evaluation summary
+success_rate=1.000 (1/1)
+mean_return=24.186
+mean_episode_length=86.0
+mean_final_goal_distance=0.0087
+termination_counts={'stable_success': 1}
+episodes_csv=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/update_check_20261013/legacy_posvel_force11_k1/compatibility_episodes.csv
+summary_json=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/update_check_20261013/legacy_posvel_force11_k1/compatibility_summary.json

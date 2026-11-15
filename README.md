@@ -11,6 +11,7 @@ improve stable pushing across different friction conditions.
 
 - [中文说明](#中文说明)
 - [English documentation](#english-documentation)
+- [本地部署、启动与 Git 入门指南](docs/LOCAL_SETUP_ZH.md)
 
 ---
 

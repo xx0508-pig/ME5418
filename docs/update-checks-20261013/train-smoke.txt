@@ -1,0 +1,19 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Using cpu device
+Wrapping the env in a DummyVecEnv.
+Logging to outputs/runs/dev_update_20261013_norm_k4/tensorboard/ppo_fixed_friction_1
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 300      |
+|    ep_rew_mean     | -0.716   |
+|    success_rate    | 0        |
+| time/              |          |
+|    fps             | 118      |
+|    iterations      | 1        |
+|    time_elapsed    | 17       |
+|    total_timesteps | 2048     |
+---------------------------------
+Saved final model to outputs/runs/dev_update_20261013_norm_k4/final_model.zip
+Saved run metadata to outputs/runs/dev_update_20261013_norm_k4/config.json

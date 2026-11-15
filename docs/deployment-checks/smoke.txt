@@ -1,0 +1,6 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+PASS: clean LIBERO pushing environment
+obs=(6,), frame=(64, 64, 3), friction=0.764
+objects=['plate_1'], fixtures=[]

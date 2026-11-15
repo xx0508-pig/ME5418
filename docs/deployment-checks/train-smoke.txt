@@ -1,0 +1,42 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+Using cpu device
+Wrapping the env in a DummyVecEnv.
+Logging to outputs/runs/local_setup_smoke_20261001/tensorboard/ppo_v1_1
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 300      |
+|    ep_rew_mean     | -0.671   |
+|    success_rate    | 0        |
+| time/              |          |
+|    fps             | 30       |
+|    iterations      | 1        |
+|    time_elapsed    | 67       |
+|    total_timesteps | 2048     |
+---------------------------------
+-----------------------------------------
+| rollout/                |             |
+|    ep_len_mean          | 300         |
+|    ep_rew_mean          | -0.225      |
+|    success_rate         | 0           |
+| time/                   |             |
+|    fps                  | 28          |
+|    iterations           | 2           |
+|    time_elapsed         | 141         |
+|    total_timesteps      | 4096        |
+| train/                  |             |
+|    approx_kl            | 0.018257985 |
+|    clip_fraction        | 0.248       |
+|    clip_range           | 0.2         |
+|    entropy_loss         | -4.26       |
+|    explained_variance   | -0.0264     |
+|    learning_rate        | 0.0003      |
+|    loss                 | -0.0874     |
+|    n_updates            | 10          |
+|    policy_gradient_loss | -0.0353     |
+|    std                  | 1           |
+|    value_loss           | 0.004       |
+-----------------------------------------
+Saved final model to outputs/runs/local_setup_smoke_20261001/final_model.zip
+Saved run metadata to outputs/runs/local_setup_smoke_20261001/config.json

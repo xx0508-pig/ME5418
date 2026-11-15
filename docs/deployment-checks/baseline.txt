@@ -1,0 +1,13 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+episode=01 seed=2000 success=False reason=time_limit steps=300 final_goal=0.0619 effort=2.527 max_force_xy=0.016
+episode=02 seed=2001 success=False reason=time_limit steps=300 final_goal=0.0393 effort=2.394 max_force_xy=0.021
+
+Conventional feedback baseline summary
+success_rate=0.000 (0/2)
+mean_control_effort=2.460
+mean_max_contact_force_xy=0.018
+episodes_csv=outputs/runs/local_setup_baseline_20261001/episodes.csv
+summary_json=outputs/runs/local_setup_baseline_20261001/summary.json
+video=outputs/runs/local_setup_baseline_20261001/feedback_baseline.mp4

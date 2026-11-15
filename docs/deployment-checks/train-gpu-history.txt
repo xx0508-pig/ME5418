@@ -1,0 +1,21 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/.venv/lib/python3.12/site-packages/stable_baselines3/common/on_policy_algorithm.py:150: UserWarning: You are trying to run PPO on the GPU, but it is primarily intended to run on the CPU when not using a CNN policy (you are using ActorCriticPolicy which should be a MlpPolicy). See https://github.com/DLR-RM/stable-baselines3/issues/1245 for more info. You can pass `device='cpu'` or `export CUDA_VISIBLE_DEVICES=` to force using the CPU.Note: The model will train, but the GPU utilization will be poor and the training might take longer than on CPU.
+  warnings.warn(
+Using cuda device
+Wrapping the env in a DummyVecEnv.
+Logging to outputs/runs/local_setup_gpu_history_20261001/tensorboard/ppo_v1_1
+---------------------------------
+| rollout/           |          |
+|    ep_len_mean     | 300      |
+|    ep_rew_mean     | -0.426   |
+|    success_rate    | 0        |
+| time/              |          |
+|    fps             | 109      |
+|    iterations      | 1        |
+|    time_elapsed    | 18       |
+|    total_timesteps | 2048     |
+---------------------------------
+Saved final model to outputs/runs/local_setup_gpu_history_20261001/final_model.zip
+Saved run metadata to outputs/runs/local_setup_gpu_history_20261001/config.json
