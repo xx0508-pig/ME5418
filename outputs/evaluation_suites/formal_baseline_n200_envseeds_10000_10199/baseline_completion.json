@@ -1,0 +1,27 @@
+{
+  "completed_at": "2026-11-17T16:25:08+08:00",
+  "service": "me5418-baseline-formal.service",
+  "result": "success",
+  "exec_main_status": 0,
+  "jobs_total": 10,
+  "episodes_total": 2000,
+  "variants": [
+    "pi_no_release",
+    "hybrid_pi_settle"
+  ],
+  "conditions": [
+    "random_mu_0p3_0p9",
+    "fixed_mu_0p3",
+    "fixed_mu_0p6",
+    "fixed_mu_0p9",
+    "fixed_mu_1"
+  ],
+  "code_git_sha": "4980fa07ce9a1d2a215eeb9c4bc0a95880b28df4",
+  "worktree_clean": true,
+  "artifacts": {
+    "driver": "outputs/evaluation_suites/formal_baseline_n200_envseeds_10000_10199/run_formal_baseline.sh",
+    "run_log": "outputs/evaluation_suites/formal_baseline_n200_envseeds_10000_10199/run.log",
+    "manifest": "outputs/evaluation_suites/formal_baseline_n200_envseeds_10000_10199/artifact_manifest.json",
+    "comparison": "outputs/evaluation_suites/formal_baseline_n200_envseeds_10000_10199/comparison_metrics.csv"
+  }
+}

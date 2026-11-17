@@ -1,0 +1,41 @@
+{
+  "snapshot_created_at": "2026-11-15T23:26:03+08:00",
+  "scope": "seed43 and seed44 only; NOT a three-seed final result",
+  "protocol": {
+    "aggregation_unit": "independent_training_seed",
+    "contact_force_threshold": 0.2,
+    "deterministic_policy": true,
+    "episode_seed_range": [
+      10000,
+      10199
+    ],
+    "episodes_per_training_seed_and_condition": 200,
+    "fixed_frictions": [
+      0.3,
+      0.6,
+      0.9,
+      1.0
+    ],
+    "random_friction_range": [
+      0.3,
+      0.9
+    ],
+    "training_seeds": [
+      43,
+      44
+    ]
+  },
+  "evaluation_git": {
+    "dirty": false,
+    "sha": "4980fa07ce9a1d2a215eeb9c4bc0a95880b28df4"
+  },
+  "files": {
+    "per_training_seed.csv": "a83c41503e5e3872fffcd34e7d6df4ce91327fc59049cd5657b397908ed41470",
+    "aggregate_across_training_seeds.csv": "c4fe95f2aa66f653d68eb6780094221b06f2b0842e6afd3248b3ec18059d1e38",
+    "summary.json": "3edc06dcd03912354de7fc23b733ac657f98bbd37e0e28b721d2cd475d3fa418",
+    "friction_curve_success_rate.png": "69f6cc35fb3c55f4a41f7b8be13370fe563a9d7ca48325275507f2a8829204fc",
+    "run.log": "e1b354078b8ad631d4d6891e69f6910af5c32e29937e0a09c4a8b8e646f33e50",
+    "launch_info.json": "187831d6e7bc4afcc4fdee46de9bbff06cbf0063a8c3044ce052d84a2290755e",
+    "dry_run.log": "a3bcfbf02a136005e7e82dac86e984bce3fbb3dd85476aee0db46bbbcfee4744"
+  }
+}

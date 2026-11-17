@@ -1,0 +1,28 @@
+{
+  "created_at": "2026-11-17T14:54:54+08:00",
+  "jobs": 75,
+  "episodes": 15000,
+  "aggregate_rows": 25,
+  "training_seeds": [
+    42,
+    43,
+    44
+  ],
+  "unique_keys": 75,
+  "logs": 75,
+  "seed42_logs": 25,
+  "manifest_jobs": 75,
+  "manifest_files": 225,
+  "manifest_hashes_ok": true,
+  "seed43_44_hash_baseline_ok": true,
+  "two_seed_snapshot_ok": true,
+  "old_two_seed_readme_ok": true,
+  "old_artifact_manifest_ok": true,
+  "no_videos": true,
+  "summary_git": {
+    "dirty": false,
+    "sha": "4980fa07ce9a1d2a215eeb9c4bc0a95880b28df4"
+  },
+  "service_result": "success",
+  "service_exit_code": 0
+}

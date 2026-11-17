@@ -1,0 +1,25 @@
+{
+  "completed_at": "2026-11-17T14:52:03+08:00",
+  "service": "me5418-eval-seed42-44.service",
+  "result": "success",
+  "exec_main_status": 0,
+  "jobs_total": 75,
+  "jobs_new_seed42": 25,
+  "jobs_skipped_seed43_44": 50,
+  "episodes_total": 15000,
+  "per_training_seed_rows": 75,
+  "aggregate_rows": 25,
+  "training_seeds": [
+    42,
+    43,
+    44
+  ],
+  "artifacts": {
+    "per_training_seed": "per_training_seed.csv",
+    "aggregate": "aggregate_across_training_seeds.csv",
+    "summary": "summary.json",
+    "curve": "friction_curve_success_rate.png",
+    "log": "run_three_seed.log",
+    "manifest": "artifact_manifest_three_seed.json"
+  }
+}

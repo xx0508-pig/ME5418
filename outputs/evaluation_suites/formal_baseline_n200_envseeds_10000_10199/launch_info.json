@@ -1,0 +1,41 @@
+{
+  "created_at": "2026-11-17T15:13:05+08:00",
+  "suite": "formal_baseline_n200_envseeds_10000_10199",
+  "code_git_sha": "4980fa07ce9a1d2a215eeb9c4bc0a95880b28df4",
+  "worktree_clean_at_start": true,
+  "driver": "outputs/evaluation_suites/formal_baseline_n200_envseeds_10000_10199/run_formal_baseline.sh",
+  "run_root": "outputs/runs/formal_baseline_n200_envseeds_10000_10199",
+  "protocol": {
+    "controllers": [
+      "pi_no_release",
+      "hybrid_pi_settle"
+    ],
+    "conditions": [
+      "random_mu_0p3_0p9",
+      "fixed_mu_0p3",
+      "fixed_mu_0p6",
+      "fixed_mu_0p9",
+      "fixed_mu_1"
+    ],
+    "episodes_per_job": 200,
+    "jobs": 10,
+    "total_episodes": 2000,
+    "episode_seed_range": [
+      10000,
+      10199
+    ],
+    "video_episodes": 0
+  },
+  "controller_parameters": {
+    "velocity_kp": 0.2,
+    "velocity_ki": 0.05,
+    "max_object_speed": 0.06,
+    "slowdown_distance": 0.14,
+    "other": "FeedbackControllerConfig defaults"
+  },
+  "ppo_protection": "outputs/evaluation_suites/formal_baseline_n200_envseeds_10000_10199/ppo_reference_hashes.json",
+  "preflight": {
+    "one_episode": "both time_limit at seed 2000, final_goal=0.0619",
+    "five_episode": "pi 1/5, hybrid 3/5 at seeds 2000-2004; SETTLE observed in successful hybrid episodes"
+  }
+}

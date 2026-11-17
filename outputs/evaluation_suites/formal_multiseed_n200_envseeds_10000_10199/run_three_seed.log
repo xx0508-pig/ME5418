@@ -1,0 +1,158 @@
+Formal suite: formal_multiseed_n200_envseeds_10000_10199
+Training seeds: [42, 43, 44]
+Jobs: 75; total episodes: 15000
+[1/75] train_seed=42 random_mu_0p3_0p9 pos6_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_random_mu_0p3_0p9_pos6_k1.log
+[2/75] train_seed=42 random_mu_0p3_0p9 posvel9_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_random_mu_0p3_0p9_posvel9_k1.log
+[3/75] train_seed=42 random_mu_0p3_0p9 posvel_force11_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_random_mu_0p3_0p9_posvel_force11_k1.log
+[4/75] train_seed=42 random_mu_0p3_0p9 posvel9_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_random_mu_0p3_0p9_posvel9_k4.log
+[5/75] train_seed=42 random_mu_0p3_0p9 posvel_force11_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_random_mu_0p3_0p9_posvel_force11_k4.log
+[6/75] train_seed=42 fixed_mu_0p3 pos6_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p3_pos6_k1.log
+[7/75] train_seed=42 fixed_mu_0p3 posvel9_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p3_posvel9_k1.log
+[8/75] train_seed=42 fixed_mu_0p3 posvel_force11_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p3_posvel_force11_k1.log
+[9/75] train_seed=42 fixed_mu_0p3 posvel9_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p3_posvel9_k4.log
+[10/75] train_seed=42 fixed_mu_0p3 posvel_force11_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p3_posvel_force11_k4.log
+[11/75] train_seed=42 fixed_mu_0p6 pos6_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p6_pos6_k1.log
+[12/75] train_seed=42 fixed_mu_0p6 posvel9_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p6_posvel9_k1.log
+[13/75] train_seed=42 fixed_mu_0p6 posvel_force11_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p6_posvel_force11_k1.log
+[14/75] train_seed=42 fixed_mu_0p6 posvel9_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p6_posvel9_k4.log
+[15/75] train_seed=42 fixed_mu_0p6 posvel_force11_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p6_posvel_force11_k4.log
+[16/75] train_seed=42 fixed_mu_0p9 pos6_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p9_pos6_k1.log
+[17/75] train_seed=42 fixed_mu_0p9 posvel9_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p9_posvel9_k1.log
+[18/75] train_seed=42 fixed_mu_0p9 posvel_force11_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p9_posvel_force11_k1.log
+[19/75] train_seed=42 fixed_mu_0p9 posvel9_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p9_posvel9_k4.log
+[20/75] train_seed=42 fixed_mu_0p9 posvel_force11_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_0p9_posvel_force11_k4.log
+[21/75] train_seed=42 fixed_mu_1 pos6_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_1_pos6_k1.log
+[22/75] train_seed=42 fixed_mu_1 posvel9_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_1_posvel9_k1.log
+[23/75] train_seed=42 fixed_mu_1 posvel_force11_k1
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_1_posvel_force11_k1.log
+[24/75] train_seed=42 fixed_mu_1 posvel9_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_1_posvel9_k4.log
+[25/75] train_seed=42 fixed_mu_1 posvel_force11_k4
+  Completed; log=/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/logs/trainseed42_fixed_mu_1_posvel_force11_k4.log
+[26/75] train_seed=43 random_mu_0p3_0p9 pos6_k1
+  Compatible result exists; skipping.
+[27/75] train_seed=43 random_mu_0p3_0p9 posvel9_k1
+  Compatible result exists; skipping.
+[28/75] train_seed=43 random_mu_0p3_0p9 posvel_force11_k1
+  Compatible result exists; skipping.
+[29/75] train_seed=43 random_mu_0p3_0p9 posvel9_k4
+  Compatible result exists; skipping.
+[30/75] train_seed=43 random_mu_0p3_0p9 posvel_force11_k4
+  Compatible result exists; skipping.
+[31/75] train_seed=43 fixed_mu_0p3 pos6_k1
+  Compatible result exists; skipping.
+[32/75] train_seed=43 fixed_mu_0p3 posvel9_k1
+  Compatible result exists; skipping.
+[33/75] train_seed=43 fixed_mu_0p3 posvel_force11_k1
+  Compatible result exists; skipping.
+[34/75] train_seed=43 fixed_mu_0p3 posvel9_k4
+  Compatible result exists; skipping.
+[35/75] train_seed=43 fixed_mu_0p3 posvel_force11_k4
+  Compatible result exists; skipping.
+[36/75] train_seed=43 fixed_mu_0p6 pos6_k1
+  Compatible result exists; skipping.
+[37/75] train_seed=43 fixed_mu_0p6 posvel9_k1
+  Compatible result exists; skipping.
+[38/75] train_seed=43 fixed_mu_0p6 posvel_force11_k1
+  Compatible result exists; skipping.
+[39/75] train_seed=43 fixed_mu_0p6 posvel9_k4
+  Compatible result exists; skipping.
+[40/75] train_seed=43 fixed_mu_0p6 posvel_force11_k4
+  Compatible result exists; skipping.
+[41/75] train_seed=43 fixed_mu_0p9 pos6_k1
+  Compatible result exists; skipping.
+[42/75] train_seed=43 fixed_mu_0p9 posvel9_k1
+  Compatible result exists; skipping.
+[43/75] train_seed=43 fixed_mu_0p9 posvel_force11_k1
+  Compatible result exists; skipping.
+[44/75] train_seed=43 fixed_mu_0p9 posvel9_k4
+  Compatible result exists; skipping.
+[45/75] train_seed=43 fixed_mu_0p9 posvel_force11_k4
+  Compatible result exists; skipping.
+[46/75] train_seed=43 fixed_mu_1 pos6_k1
+  Compatible result exists; skipping.
+[47/75] train_seed=43 fixed_mu_1 posvel9_k1
+  Compatible result exists; skipping.
+[48/75] train_seed=43 fixed_mu_1 posvel_force11_k1
+  Compatible result exists; skipping.
+[49/75] train_seed=43 fixed_mu_1 posvel9_k4
+  Compatible result exists; skipping.
+[50/75] train_seed=43 fixed_mu_1 posvel_force11_k4
+  Compatible result exists; skipping.
+[51/75] train_seed=44 random_mu_0p3_0p9 pos6_k1
+  Compatible result exists; skipping.
+[52/75] train_seed=44 random_mu_0p3_0p9 posvel9_k1
+  Compatible result exists; skipping.
+[53/75] train_seed=44 random_mu_0p3_0p9 posvel_force11_k1
+  Compatible result exists; skipping.
+[54/75] train_seed=44 random_mu_0p3_0p9 posvel9_k4
+  Compatible result exists; skipping.
+[55/75] train_seed=44 random_mu_0p3_0p9 posvel_force11_k4
+  Compatible result exists; skipping.
+[56/75] train_seed=44 fixed_mu_0p3 pos6_k1
+  Compatible result exists; skipping.
+[57/75] train_seed=44 fixed_mu_0p3 posvel9_k1
+  Compatible result exists; skipping.
+[58/75] train_seed=44 fixed_mu_0p3 posvel_force11_k1
+  Compatible result exists; skipping.
+[59/75] train_seed=44 fixed_mu_0p3 posvel9_k4
+  Compatible result exists; skipping.
+[60/75] train_seed=44 fixed_mu_0p3 posvel_force11_k4
+  Compatible result exists; skipping.
+[61/75] train_seed=44 fixed_mu_0p6 pos6_k1
+  Compatible result exists; skipping.
+[62/75] train_seed=44 fixed_mu_0p6 posvel9_k1
+  Compatible result exists; skipping.
+[63/75] train_seed=44 fixed_mu_0p6 posvel_force11_k1
+  Compatible result exists; skipping.
+[64/75] train_seed=44 fixed_mu_0p6 posvel9_k4
+  Compatible result exists; skipping.
+[65/75] train_seed=44 fixed_mu_0p6 posvel_force11_k4
+  Compatible result exists; skipping.
+[66/75] train_seed=44 fixed_mu_0p9 pos6_k1
+  Compatible result exists; skipping.
+[67/75] train_seed=44 fixed_mu_0p9 posvel9_k1
+  Compatible result exists; skipping.
+[68/75] train_seed=44 fixed_mu_0p9 posvel_force11_k1
+  Compatible result exists; skipping.
+[69/75] train_seed=44 fixed_mu_0p9 posvel9_k4
+  Compatible result exists; skipping.
+[70/75] train_seed=44 fixed_mu_0p9 posvel_force11_k4
+  Compatible result exists; skipping.
+[71/75] train_seed=44 fixed_mu_1 pos6_k1
+  Compatible result exists; skipping.
+[72/75] train_seed=44 fixed_mu_1 posvel9_k1
+  Compatible result exists; skipping.
+[73/75] train_seed=44 fixed_mu_1 posvel_force11_k1
+  Compatible result exists; skipping.
+[74/75] train_seed=44 fixed_mu_1 posvel9_k4
+  Compatible result exists; skipping.
+[75/75] train_seed=44 fixed_mu_1 posvel_force11_k4
+  Compatible result exists; skipping.
+Formal evaluation complete.
+/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/per_training_seed.csv
+/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/aggregate_across_training_seeds.csv
+/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/summary.json
+/home/saga/Documents/Codex/2026-10-01/files-mentioned-by-the-user-proposal/outputs/ME5418/outputs/evaluation_suites/formal_multiseed_n200_envseeds_10000_10199/friction_curve_success_rate.png

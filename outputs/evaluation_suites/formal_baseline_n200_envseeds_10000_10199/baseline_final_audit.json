@@ -1,0 +1,19 @@
+{
+  "baseline_jobs": 10,
+  "baseline_episodes": 2000,
+  "baseline_configs_completed": true,
+  "baseline_problems": [],
+  "baseline_manifest_jobs": 10,
+  "baseline_manifest_hash_bad": 0,
+  "ppo_manifest_jobs": 75,
+  "ppo_manifest_hash_bad": 0,
+  "ppo_reference_hash_bad": 0,
+  "ppo_files_modified_after_baseline_start": 0,
+  "comparison_rows": 35,
+  "missing_artifacts": [],
+  "videos": 0,
+  "git_head": "4980fa07ce9a1d2a215eeb9c4bc0a95880b28df4",
+  "git_status_clean": true,
+  "git_status": "",
+  "remote_main": "0bbabb3846720343a0e4b7c3bc15fa5d429d307b"
+}

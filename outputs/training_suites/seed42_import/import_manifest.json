@@ -1,0 +1,235 @@
+{
+  "created_at": "2026-11-17T13:07:58+08:00",
+  "source_repo": "https://github.com/xx0508-pig/ME5418",
+  "source_branch": "results/seed42-20261116",
+  "source_commit": "a59046389f3883fb0bf11eac8aa4310fdc0b1398",
+  "imported_files_only": [
+    "config.json",
+    "final_model.zip"
+  ],
+  "not_imported": [
+    "evaluations/ (500 episodes, env seeds 4000-4499, incompatible protocol)"
+  ],
+  "models": [
+    {
+      "run_name": "formal_norm_pos6_k1_seed42",
+      "destination": "outputs/runs/formal_norm_pos6_k1_seed42",
+      "files": {
+        "config.json": {
+          "source_blob": "86b7dc38031ea3f5ba9d46c3b3083a6d2a411833",
+          "sha256": "47e0cd70e29ecf50e77610edb27b2011472d419d994c8089955a5a8361f97a6e",
+          "bytes": 5113,
+          "action": "created"
+        },
+        "final_model.zip": {
+          "source_blob": "e9c7b20caa45a418b0bf29eacd8487cab8fda699",
+          "sha256": "54f0ada491772471e6a69c56e5093b0114b02bc9d49738e5fd02c8e4b5515695",
+          "bytes": 470428,
+          "action": "created"
+        }
+      },
+      "config_summary": {
+        "status": "completed",
+        "training_seed": 42,
+        "env_version": "v1",
+        "observation_mode": "pos6",
+        "history_length": 1,
+        "normalization": "fixed_v1",
+        "requested_friction_range": [
+          0.3,
+          0.9
+        ],
+        "requested_timesteps": 500000,
+        "final_num_timesteps": 501760,
+        "effective_ent_coef": 0.01,
+        "device": "cpu",
+        "actor_hidden_layers": [
+          128,
+          128
+        ],
+        "critic_hidden_layers": [
+          128,
+          128
+        ],
+        "training_git_sha": "411919eb9ac5e1fbe4483c3a9c2e242b8fd0d5cc",
+        "training_git_dirty": false
+      }
+    },
+    {
+      "run_name": "formal_norm_posvel9_k1_seed42",
+      "destination": "outputs/runs/formal_norm_posvel9_k1_seed42",
+      "files": {
+        "config.json": {
+          "source_blob": "88741177600e038e059e1092c5b13fdc9820d27a",
+          "sha256": "39b3dcdd9ce2a83640976ffda54cb0f7e84c1e82acc8e97aefea3cdeda5b17e9",
+          "bytes": 5424,
+          "action": "created"
+        },
+        "final_model.zip": {
+          "source_blob": "a52fbd7a1f3aa4a477f6d2bbfb2b4b0c23a39d31",
+          "sha256": "e0edcbae38198a45f6d337dea6f8044b578bc8e29d1a91249968a354dcfa4ff5",
+          "bytes": 479756,
+          "action": "created"
+        }
+      },
+      "config_summary": {
+        "status": "completed",
+        "training_seed": 42,
+        "env_version": "v1",
+        "observation_mode": "posvel9",
+        "history_length": 1,
+        "normalization": "fixed_v1",
+        "requested_friction_range": [
+          0.3,
+          0.9
+        ],
+        "requested_timesteps": 500000,
+        "final_num_timesteps": 501760,
+        "effective_ent_coef": 0.01,
+        "device": "cpu",
+        "actor_hidden_layers": [
+          128,
+          128
+        ],
+        "critic_hidden_layers": [
+          128,
+          128
+        ],
+        "training_git_sha": "411919eb9ac5e1fbe4483c3a9c2e242b8fd0d5cc",
+        "training_git_dirty": false
+      }
+    },
+    {
+      "run_name": "formal_norm_posvel9_k4_seed42",
+      "destination": "outputs/runs/formal_norm_posvel9_k4_seed42",
+      "files": {
+        "config.json": {
+          "source_blob": "7d43d3856c07ee5a9802d584363d7311efd6faf7",
+          "sha256": "5da2bad11065251a8a83e59257facaee8f3ad03bc5b735bab968616c10504272",
+          "bytes": 5538,
+          "action": "created"
+        },
+        "final_model.zip": {
+          "source_blob": "6215940cc526be6c7f07f162a4585e35953d359d",
+          "sha256": "6facf4ad6790f36fd5ee9ac5ead31ecfae6e167889cb754389943935522add5e",
+          "bytes": 591723,
+          "action": "created"
+        }
+      },
+      "config_summary": {
+        "status": "completed",
+        "training_seed": 42,
+        "env_version": "v1",
+        "observation_mode": "posvel9",
+        "history_length": 4,
+        "normalization": "fixed_v1",
+        "requested_friction_range": [
+          0.3,
+          0.9
+        ],
+        "requested_timesteps": 500000,
+        "final_num_timesteps": 501760,
+        "effective_ent_coef": 0.01,
+        "device": "cpu",
+        "actor_hidden_layers": [
+          128,
+          128
+        ],
+        "critic_hidden_layers": [
+          128,
+          128
+        ],
+        "training_git_sha": "411919eb9ac5e1fbe4483c3a9c2e242b8fd0d5cc",
+        "training_git_dirty": false
+      }
+    },
+    {
+      "run_name": "formal_norm_posvel_force11_k1_seed42",
+      "destination": "outputs/runs/formal_norm_posvel_force11_k1_seed42",
+      "files": {
+        "config.json": {
+          "source_blob": "b1a2995ee61346d3d2f98460b6aa58304fd9b1ae",
+          "sha256": "da2de7b51e0d7b1fe16db01d4e23b49609940aa6a9380ff1dd30e995993bf77f",
+          "bytes": 5734,
+          "action": "created"
+        },
+        "final_model.zip": {
+          "source_blob": "d0b625e1bfa612a1810822fffe1ef8afdf4f374f",
+          "sha256": "354445362238296d79a63c940bb671c59629bd11cc34fe4ffc2ddb570802724b",
+          "bytes": 485986,
+          "action": "created"
+        }
+      },
+      "config_summary": {
+        "status": "completed",
+        "training_seed": 42,
+        "env_version": "v1",
+        "observation_mode": "posvel_force11",
+        "history_length": 1,
+        "normalization": "fixed_v1",
+        "requested_friction_range": [
+          0.3,
+          0.9
+        ],
+        "requested_timesteps": 500000,
+        "final_num_timesteps": 501760,
+        "effective_ent_coef": 0.01,
+        "device": "cpu",
+        "actor_hidden_layers": [
+          128,
+          128
+        ],
+        "critic_hidden_layers": [
+          128,
+          128
+        ],
+        "training_git_sha": "411919eb9ac5e1fbe4483c3a9c2e242b8fd0d5cc",
+        "training_git_dirty": false
+      }
+    },
+    {
+      "run_name": "formal_norm_posvel_force11_k4_seed42",
+      "destination": "outputs/runs/formal_norm_posvel_force11_k4_seed42",
+      "files": {
+        "config.json": {
+          "source_blob": "b11d39fe7fb9304977ad0fff192e79be7d7d7085",
+          "sha256": "f96f7d5a69075662c452a42e15cd4484fc5e43609ef5812260010d46edd25d72",
+          "bytes": 5845,
+          "action": "created"
+        },
+        "final_model.zip": {
+          "source_blob": "4a48babc16d804a41f7a942640efb4525a326f6a",
+          "sha256": "2407125e448555086e6945a67a2b773339191f19a0a1d5060e5235e6f3ca0362",
+          "bytes": 616620,
+          "action": "created"
+        }
+      },
+      "config_summary": {
+        "status": "completed",
+        "training_seed": 42,
+        "env_version": "v1",
+        "observation_mode": "posvel_force11",
+        "history_length": 4,
+        "normalization": "fixed_v1",
+        "requested_friction_range": [
+          0.3,
+          0.9
+        ],
+        "requested_timesteps": 500000,
+        "final_num_timesteps": 501760,
+        "effective_ent_coef": 0.01,
+        "device": "cpu",
+        "actor_hidden_layers": [
+          128,
+          128
+        ],
+        "critic_hidden_layers": [
+          128,
+          128
+        ],
+        "training_git_sha": "411919eb9ac5e1fbe4483c3a9c2e242b8fd0d5cc",
+        "training_git_dirty": false
+      }
+    }
+  ]
+}

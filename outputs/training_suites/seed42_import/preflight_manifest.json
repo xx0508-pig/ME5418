@@ -1,0 +1,46 @@
+{
+  "created_at": "2026-11-17T13:10:00+08:00",
+  "scope": "development seed 2000, 1 episode each, not part of formal results",
+  "preflights": [
+    {
+      "run_name": "formal_norm_pos6_k1_seed42",
+      "evaluation_name": "preflight3_seed42_pos6_k1_devseed2000_20261117",
+      "episodes": 1,
+      "seed": 2000,
+      "success_rate": 1.0,
+      "summary": "outputs/runs/formal_norm_pos6_k1_seed42/evaluations/preflight3_seed42_pos6_k1_devseed2000_20261117_summary.json"
+    },
+    {
+      "run_name": "formal_norm_posvel9_k1_seed42",
+      "evaluation_name": "preflight3_seed42_posvel9_k1_devseed2000_20261117",
+      "episodes": 1,
+      "seed": 2000,
+      "success_rate": 1.0,
+      "summary": "outputs/runs/formal_norm_posvel9_k1_seed42/evaluations/preflight3_seed42_posvel9_k1_devseed2000_20261117_summary.json"
+    },
+    {
+      "run_name": "formal_norm_posvel9_k4_seed42",
+      "evaluation_name": "preflight3_seed42_posvel9_k4_devseed2000_20261117",
+      "episodes": 1,
+      "seed": 2000,
+      "success_rate": 1.0,
+      "summary": "outputs/runs/formal_norm_posvel9_k4_seed42/evaluations/preflight3_seed42_posvel9_k4_devseed2000_20261117_summary.json"
+    },
+    {
+      "run_name": "formal_norm_posvel_force11_k1_seed42",
+      "evaluation_name": "preflight3_seed42_posvel_force11_k1_devseed2000_20261117",
+      "episodes": 1,
+      "seed": 2000,
+      "success_rate": 1.0,
+      "summary": "outputs/runs/formal_norm_posvel_force11_k1_seed42/evaluations/preflight3_seed42_posvel_force11_k1_devseed2000_20261117_summary.json"
+    },
+    {
+      "run_name": "formal_norm_posvel_force11_k4_seed42",
+      "evaluation_name": "preflight3_seed42_posvel_force11_k4_devseed2000_20261117",
+      "episodes": 1,
+      "seed": 2000,
+      "success_rate": 1.0,
+      "summary": "outputs/runs/formal_norm_posvel_force11_k4_seed42/evaluations/preflight3_seed42_posvel_force11_k4_devseed2000_20261117_summary.json"
+    }
+  ]
+}

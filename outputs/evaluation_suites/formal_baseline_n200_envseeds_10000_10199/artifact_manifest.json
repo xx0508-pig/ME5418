@@ -1,0 +1,187 @@
+{
+  "created_at": "2026-11-17T16:26:36+08:00",
+  "suite": "formal_baseline_n200_envseeds_10000_10199",
+  "job_count": 10,
+  "jobs": [
+    {
+      "run_name": "hybrid_pi_settle_fixed_mu_0p3",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p3/config.json",
+        "sha256": "af694438d97ba7adec3c5d4fce50605b237fcb76e0154bad95f2c61bf859c262",
+        "bytes": 4695
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p3/summary.json",
+        "sha256": "3a80ae3884c4c8ea5f147d5c3fdcb0c3f2d04bb7dccbf62411ce616496becb99",
+        "bytes": 3874
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p3/episodes.csv",
+        "sha256": "24ea8462dbcbf1a0bb2629d7ae0efd3a279df68da0f963f2b2ed514543304770",
+        "bytes": 69582
+      }
+    },
+    {
+      "run_name": "hybrid_pi_settle_fixed_mu_0p6",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p6/config.json",
+        "sha256": "a0b32b9cbcdbc5718196bf611dee9207f307e868b3dfa40274e69ca4d00c2016",
+        "bytes": 4695
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p6/summary.json",
+        "sha256": "cc2c609ad99c7c4975ad8ff14141ceb31e372a516f7971d406e2ee09667bc0d1",
+        "bytes": 3865
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p6/episodes.csv",
+        "sha256": "77d082d4e95e120841c9ebacb4098694faae99897cb93171cf1cf54470c488a1",
+        "bytes": 69264
+      }
+    },
+    {
+      "run_name": "hybrid_pi_settle_fixed_mu_0p9",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p9/config.json",
+        "sha256": "409ced56cd5a7d4e830124e97ec680f37785eacce16614b8943216801911c434",
+        "bytes": 4695
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p9/summary.json",
+        "sha256": "6fb42f16c34d4ea561e3f7c4dcab778e710f7dcf4bcd96d1231c95b27af330b4",
+        "bytes": 3909
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_0p9/episodes.csv",
+        "sha256": "bf3a5fdeab573f311126c7478fdbf8848b50b3e16da0178a73c65c8036747f8e",
+        "bytes": 71516
+      }
+    },
+    {
+      "run_name": "hybrid_pi_settle_fixed_mu_1",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_1/config.json",
+        "sha256": "90786a1970835cde1d7fb22e942665136ba3a5734dff42a45ef71cc32a3f5dc6",
+        "bytes": 4681
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_1/summary.json",
+        "sha256": "479d8e3cf29d317354680b97beba924c98ca743cf7d078e4f813f6baa0195c5b",
+        "bytes": 3868
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_fixed_mu_1/episodes.csv",
+        "sha256": "43eb7c323dad60e262eedc2a1d8785df75b94f4d8104ec3e8b6e2bd18584754c",
+        "bytes": 68288
+      }
+    },
+    {
+      "run_name": "hybrid_pi_settle_random_mu_0p3_0p9",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_random_mu_0p3_0p9/config.json",
+        "sha256": "015e52adfb8453da2e69eb1bd4912f17841da4b300650f11bcc7c093df34abe2",
+        "bytes": 4794
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_random_mu_0p3_0p9/summary.json",
+        "sha256": "b371d83977d4ba95a016fcb6605d4344bd7037e43f80abe7624826cf180f083a",
+        "bytes": 3959
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/hybrid_pi_settle_random_mu_0p3_0p9/episodes.csv",
+        "sha256": "fdecfa04a12145d720fa548523e19a51c5d4e354d570b4af9a393f5306c20d77",
+        "bytes": 75111
+      }
+    },
+    {
+      "run_name": "pi_no_release_fixed_mu_0p3",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p3/config.json",
+        "sha256": "24961f9190f0700fab6b239a9a574fc1a07ec58bf12f6366ccb2f4ba1ea32067",
+        "bytes": 4663
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p3/summary.json",
+        "sha256": "d47494c8254bd5801511b93050702f91a645d141420593d5111dcf651eeb8dc0",
+        "bytes": 3856
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p3/episodes.csv",
+        "sha256": "2df2b3cb51c9f25522f25bc79a513b59eb5718ce7afce76efa788ffc31ed1d79",
+        "bytes": 66211
+      }
+    },
+    {
+      "run_name": "pi_no_release_fixed_mu_0p6",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p6/config.json",
+        "sha256": "aebcec5908284635d76c484f2ad6b4e25493d83fae0591b8bffb4ddec22cba57",
+        "bytes": 4663
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p6/summary.json",
+        "sha256": "a2e2b307eb93976fd839c3fad238a2eb8ef3732f9e3b6c472e3e502784072225",
+        "bytes": 3856
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p6/episodes.csv",
+        "sha256": "a8d279ab271004dee3f297d1c410e957f0521bc0b8fdeea616686373bcd8f8bd",
+        "bytes": 67075
+      }
+    },
+    {
+      "run_name": "pi_no_release_fixed_mu_0p9",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p9/config.json",
+        "sha256": "7cbe4bf66b927a0c8d904388ec5f07ceea997ead648616e8ee1092dd125763f7",
+        "bytes": 4663
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p9/summary.json",
+        "sha256": "f8b4b4cbaf01aabc09af8f6157f4f71a822bdbcebdf8c87f67df13374354759f",
+        "bytes": 3890
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_0p9/episodes.csv",
+        "sha256": "f0c7a44fbec5b867fdbdbe0abb42e34c2f4628f73de60653aebaf4921b05a454",
+        "bytes": 70027
+      }
+    },
+    {
+      "run_name": "pi_no_release_fixed_mu_1",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_1/config.json",
+        "sha256": "d77de62a6663de00354f9f7b6c7430650d22f24f29454aaf2ab34cdf1de3bd50",
+        "bytes": 4649
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_1/summary.json",
+        "sha256": "ebac6c198f0109b1b195cc0f517926c7e3380e6bb300dfdf79bc0c8171d78316",
+        "bytes": 3853
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_fixed_mu_1/episodes.csv",
+        "sha256": "290021229e56870b6e8af8eeaa9ff2356e181b365dca1ac56631c1b1086c6116",
+        "bytes": 67032
+      }
+    },
+    {
+      "run_name": "pi_no_release_random_mu_0p3_0p9",
+      "config.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_random_mu_0p3_0p9/config.json",
+        "sha256": "f118f4b584530e67d5564fcbe429e1ae01c9f3b5c4d411fd36f6a8c5633e1909",
+        "bytes": 4762
+      },
+      "summary.json": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_random_mu_0p3_0p9/summary.json",
+        "sha256": "28ec7d97554679ed152251671d9b7d4ac0847fad3e75a485db5e8d69d7913fc4",
+        "bytes": 3936
+      },
+      "episodes.csv": {
+        "path": "outputs/runs/formal_baseline_n200_envseeds_10000_10199/pi_no_release_random_mu_0p3_0p9/episodes.csv",
+        "sha256": "0ef447692b7131db57cee5f0cc320b6b5305196409af427469386cc6f41217a3",
+        "bytes": 72908
+      }
+    }
+  ]
+}
